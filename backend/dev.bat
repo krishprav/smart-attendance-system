@@ -1,0 +1,3 @@
+@echo off
+echo Starting server in development mode...
+npx ts-node-dev --respawn src/index.ts

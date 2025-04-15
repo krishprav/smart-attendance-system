@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+*.exe
+*.spec
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Media and generated files
+uploads/
+media/
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.mp4
+*.avi
+*.mov
+
+# Cache and temporary files
+.cache/
+.temp/
+.tmp/
+coverage/
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Model files (if using ML)
+*.h5
+*.pkl
+*.model
+*.weights

@@ -1,0 +1,141 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - attendance-network
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/frontend.Dockerfile
+    container_name: frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - attendance-network
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:5000
+      - NEXT_PUBLIC_ML_API_URL=http://ml-api-gateway:8080
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/backend.Dockerfile
+    container_name: backend
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+      - ml-api-gateway
+    networks:
+      - attendance-network
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGODB_URI=mongodb://root:example@mongodb:27017/attendance?authSource=admin
+      - JWT_SECRET=your_jwt_secret_key
+      - ML_API_URL=http://ml-api-gateway:8080
+      - EMAIL_HOST=smtp.example.com
+      - EMAIL_PORT=587
+      - EMAIL_USER=user
+      - EMAIL_PASS=password
+
+  ml-face-recognition:
+    build:
+      context: ..
+      dockerfile: docker/ml-services.Dockerfile
+    container_name: ml-face-recognition
+    restart: always
+    command: gunicorn --chdir /app/face-recognition -w 2 --bind 0.0.0.0:5001 app:app
+    ports:
+      - "5001:5001"
+    networks:
+      - attendance-network
+    volumes:
+      - ml_models:/app/models
+      - ml_data:/app/data
+    environment:
+      - FLASK_ENV=production
+      - MODEL_PATH=/app/models
+
+  ml-object-detection:
+    build:
+      context: ..
+      dockerfile: docker/ml-services.Dockerfile
+    container_name: ml-object-detection
+    restart: always
+    command: gunicorn --chdir /app/object-detection -w 2 --bind 0.0.0.0:5002 app:app
+    ports:
+      - "5002:5002"
+    networks:
+      - attendance-network
+    volumes:
+      - ml_models:/app/models
+      - ml_data:/app/data
+    environment:
+      - FLASK_ENV=production
+      - MODEL_PATH=/app/models
+
+  ml-sentiment-analysis:
+    build:
+      context: ..
+      dockerfile: docker/ml-services.Dockerfile
+    container_name: ml-sentiment-analysis
+    restart: always
+    command: gunicorn --chdir /app/sentiment-analysis -w 2 --bind 0.0.0.0:5003 app:app
+    ports:
+      - "5003:5003"
+    networks:
+      - attendance-network
+    volumes:
+      - ml_models:/app/models
+      - ml_data:/app/data
+    environment:
+      - FLASK_ENV=production
+      - MODEL_PATH=/app/models
+
+  ml-api-gateway:
+    build:
+      context: ..
+      dockerfile: docker/ml-services.Dockerfile
+    container_name: ml-api-gateway
+    restart: always
+    command: gunicorn --chdir /app/api-gateway -w 2 --bind 0.0.0.0:8080 app:app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ml-face-recognition
+      - ml-object-detection
+      - ml-sentiment-analysis
+    networks:
+      - attendance-network
+    environment:
+      - FLASK_ENV=production
+      - FACE_RECOGNITION_URL=http://ml-face-recognition:5001
+      - OBJECT_DETECTION_URL=http://ml-object-detection:5002
+      - SENTIMENT_ANALYSIS_URL=http://ml-sentiment-analysis:5003
+      - JWT_SECRET=your_jwt_secret_key
+
+networks:
+  attendance-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  ml_models:
+  ml_data:

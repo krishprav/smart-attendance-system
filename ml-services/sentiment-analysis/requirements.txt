@@ -1,0 +1,12 @@
+Flask==2.3.3
+Flask-Cors==4.0.0
+numpy==1.24.3
+opencv-python==4.8.1.78
+tensorflow==2.14.0
+keras==2.14.0
+scikit-learn==1.3.1
+pandas==2.1.1
+matplotlib==3.8.0
+requests==2.31.0
+python-dotenv==1.0.0
+gunicorn==21.2.0
