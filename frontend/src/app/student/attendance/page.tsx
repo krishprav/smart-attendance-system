@@ -4,45 +4,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import WebcamCapture from '@/components/camera/WebcamCapture';
 
-// Mock active sessions data for demo
-const mockActiveSessions = [
-  {
-    sessionId: 'sess_001',
-    courseCode: 'CS101',
-    courseName: 'Introduction to Computer Science',
-    instructor: 'Dr. Alan Turing',
-    startTime: '09:00 AM',
-    endTime: '10:30 AM',
-    date: '2025-04-15',
-    location: 'Room 101',
-    studentsPresent: 32,
-    totalStudents: 45
-  },
-  {
-    sessionId: 'sess_002',
-    courseCode: 'MATH202',
-    courseName: 'Advanced Calculus',
-    instructor: 'Dr. Katherine Johnson',
-    startTime: '11:00 AM',
-    endTime: '12:30 PM',
-    date: '2025-04-15',
-    location: 'Hall B',
-    studentsPresent: 18,
-    totalStudents: 30
-  },
-  {
-    sessionId: 'sess_003',
-    courseCode: 'PHY301',
-    courseName: 'Quantum Physics',
-    instructor: 'Dr. Richard Feynman',
-    startTime: '02:00 PM',
-    endTime: '03:30 PM',
-    date: '2025-04-15',
-    location: 'Lab 203',
-    studentsPresent: 12,
-    totalStudents: 20
-  }
-];
+// Fetch active sessions from backend API
+const fetchActiveSessions = async () => {
+  const res = await fetch('/api/active-sessions');
+  if (!res.ok) throw new Error('Failed to fetch sessions');
+  return await res.json();
+};
 
 // Simple notification function instead of toast
 const notify = (message: string, type: 'success' | 'error' | 'info') => {
@@ -56,7 +23,7 @@ const notify = (message: string, type: 'success' | 'error' | 'info') => {
 
 export default function AttendancePage() {
   const router = useRouter();
-  const [activeSessions, setActiveSessions] = useState(mockActiveSessions);
+  const [activeSessions, setActiveSessions] = useState<any[]>([]);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFaceRegistered, setIsFaceRegistered] = useState(false);
@@ -66,6 +33,16 @@ export default function AttendancePage() {
   const [attendanceMarked, setAttendanceMarked] = useState(false);
   const [attendanceResults, setAttendanceResults] = useState<any>(null);
   
+  useEffect(() => {
+    setLoading(true);
+    fetchActiveSessions()
+      .then(data => {
+        setActiveSessions(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
   useEffect(() => {
     // Check if user has registered their face
     const checkFaceRegistration = async () => {
@@ -216,7 +193,7 @@ export default function AttendancePage() {
   
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Attendance</h1>
+      <h1 className="text-4xl font-extrabold text-blue-900 mb-8 drop-shadow">Attendance</h1>
       
       {selectedSession ? (
         <div>
@@ -448,10 +425,10 @@ export default function AttendancePage() {
                     </div>
                     
                     <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-blue-900 font-semibold">
                         Attendance: {session.studentsPresent}/{session.totalStudents} students
                       </div>
-                      <button className="px-4 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                      <button className="px-4 py-1 bg-blue-700 hover:bg-blue-800 text-white text-sm rounded-xl font-bold shadow transition">
                         Mark Attendance
                       </button>
                     </div>
@@ -461,8 +438,8 @@ export default function AttendancePage() {
             )}
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">About Attendance</h2>
+          <div className="bg-white rounded-2xl shadow-xl border border-blue-200 p-8 mb-8 text-gray-900">
+            <h2 className="text-xl font-bold text-blue-900 mb-4">About Attendance</h2>
             <div className="prose prose-blue">
               <p>
                 The Smart Attendance System uses facial recognition to mark your presence in class.

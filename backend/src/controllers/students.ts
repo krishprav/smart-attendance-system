@@ -161,7 +161,10 @@ export const registerFace = async (req: AuthRequest, res: Response): Promise<any
     }
     // Call ML API Gateway to get face encoding
     const ML_GATEWAY_URL = process.env.ML_GATEWAY_URL || 'http://localhost:8080';
-    const response = await axios.post(`${ML_GATEWAY_URL}/face/register`, { image });
+    interface FaceRegisterResponse {
+      encoding?: string;
+    }
+    const response = await axios.post<FaceRegisterResponse>(`${ML_GATEWAY_URL}/face/register`, { image });
     const { encoding } = response.data;
     if (!encoding) {
       return res.status(400).json({ success: false, message: 'Face encoding failed' });

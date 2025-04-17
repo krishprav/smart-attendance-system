@@ -96,8 +96,8 @@ export default function StudentReports() {
     : 0;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Attendance Reports</h1>
+    <div className="max-w-4xl mx-auto px-4 py-8 bg-gradient-to-br from-blue-100 via-white to-blue-200 min-h-screen">
+      <h1 className="text-4xl font-extrabold text-blue-900 mb-8 drop-shadow">Attendance Reports</h1>
       
       {loading ? (
         <div className="flex justify-center items-center h-64">
@@ -105,15 +105,15 @@ export default function StudentReports() {
         </div>
       ) : (
         <>
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="bg-white rounded-2xl shadow-xl border border-blue-200 p-8 mb-8 text-gray-900">
             <div className="flex flex-col md:flex-row items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold mb-4 md:mb-0">Overall Attendance</h2>
+              <h2 className="text-xl font-bold text-blue-900 mb-4">Overall Attendance</h2>
               <div className="flex space-x-2">
                 <button
                   onClick={() => setSelectedPeriod('semester')}
                   className={`px-4 py-2 rounded-md ${
                     selectedPeriod === 'semester'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-blue-600 text-gray-900'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
@@ -123,7 +123,7 @@ export default function StudentReports() {
                   onClick={() => setSelectedPeriod('month')}
                   className={`px-4 py-2 rounded-md ${
                     selectedPeriod === 'month'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-blue-600 text-gray-900'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
@@ -160,7 +160,7 @@ export default function StudentReports() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold">{overallAttendance.toFixed(1)}%</span>
+                  <span className="text-3xl font-bold text-gray-900">{overallAttendance.toFixed(1)}%</span>
                   <span className="text-sm text-gray-500">Overall</span>
                 </div>
               </div>
@@ -171,7 +171,7 @@ export default function StudentReports() {
                     {courseReports.map(course => (
                       <div key={course.courseId} className="space-y-1">
                         <div className="flex justify-between">
-                          <span className="font-medium">{course.courseName}</span>
+                          <span className="font-medium text-gray-900">{course.courseName}</span>
                           <span className={`font-medium ${
                             course.attendancePercentage >= 90 ? 'text-green-600' :
                             course.attendancePercentage >= 75 ? 'text-yellow-600' :
@@ -203,7 +203,7 @@ export default function StudentReports() {
                       .map(month => (
                         <div key={month.month} className="space-y-1">
                           <div className="flex justify-between">
-                            <span className="font-medium">{month.month}</span>
+                            <span className="font-medium text-gray-900">{month.month}</span>
                             <span className={`font-medium ${
                               month.percentage >= 90 ? 'text-green-600' :
                               month.percentage >= 75 ? 'text-yellow-600' :
@@ -232,7 +232,7 @@ export default function StudentReports() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Courses by Attendance</h2>
+              <h2 className="text-xl font-bold text-blue-900 mb-4">Courses by Attendance</h2>
               <div className="overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
@@ -277,35 +277,35 @@ export default function StudentReports() {
             </div>
             
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Attendance Summary</h2>
+              <h2 className="text-xl font-bold text-blue-900 mb-4">Attendance Summary</h2>
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-medium text-gray-700 mb-2">Statistics</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-blue-50 p-4 rounded-lg">
                       <div className="text-sm text-blue-500 mb-1">Total Sessions</div>
-                      <div className="text-2xl font-bold">
+                      <div className="text-2xl font-bold text-gray-900">
                         {courseReports.reduce((sum, course) => sum + course.totalSessions, 0)}
                       </div>
                     </div>
                     
                     <div className="bg-green-50 p-4 rounded-lg">
                       <div className="text-sm text-green-500 mb-1">Sessions Attended</div>
-                      <div className="text-2xl font-bold">
+                      <div className="text-2xl font-bold text-gray-900">
                         {courseReports.reduce((sum, course) => sum + course.attendedSessions, 0)}
                       </div>
                     </div>
                     
                     <div className="bg-yellow-50 p-4 rounded-lg">
                       <div className="text-sm text-yellow-500 mb-1">Sessions Missed</div>
-                      <div className="text-2xl font-bold">
+                      <div className="text-2xl font-bold text-gray-900">
                         {courseReports.reduce((sum, course) => sum + (course.totalSessions - course.attendedSessions), 0)}
                       </div>
                     </div>
                     
                     <div className="bg-indigo-50 p-4 rounded-lg">
-                      <div className="text-sm text-indigo-500 mb-1">Courses</div>
-                      <div className="text-2xl font-bold">
+                      <div className="text-sm text-blue-900 mb-1">Courses</div>
+                      <div className="text-2xl font-bold text-gray-900">
                         {courseReports.length}
                       </div>
                     </div>
@@ -315,7 +315,7 @@ export default function StudentReports() {
                 <div>
                   <h3 className="text-lg font-medium text-gray-700 mb-2">Need Improvement</h3>
                   {courseReports.filter(course => course.attendancePercentage < 85).length === 0 ? (
-                    <div className="text-green-600 p-4 bg-green-50 rounded-lg">
+                    <div className="text-green-700 p-4 bg-green-100 rounded-xl font-semibold">
                       Great job! All your courses have good attendance.
                     </div>
                   ) : (
@@ -323,13 +323,13 @@ export default function StudentReports() {
                       {courseReports
                         .filter(course => course.attendancePercentage < 85)
                         .map(course => (
-                          <div key={course.courseId} className="p-3 bg-yellow-50 rounded-lg">
+                          <div key={course.courseId} className="p-3 bg-yellow-100 rounded-xl text-gray-900">
                             <div className="font-medium">{course.courseName}</div>
-                            <div className="text-sm text-gray-600 flex justify-between">
+                            <div className="text-sm text-blue-900 flex justify-between">
                               <span>Current: {course.attendancePercentage.toFixed(1)}%</span>
                               <span>Target: 85%</span>
                             </div>
-                            <div className="text-xs text-red-600 mt-1">
+                            <div className="text-xs text-red-700 mt-1 font-semibold">
                               Don't miss any more sessions to maintain eligibility.
                             </div>
                           </div>

@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { errorHandler, notFound } from './middleware/error';
+import { connectDB } from './utils/db';
 
 // Load environment variables
 dotenv.config();
@@ -14,6 +14,8 @@ import studentRoutes from './routes/students';
 import attendanceRoutes from './routes/attendance';
 import complianceRoutes from './routes/compliance';
 import analyticsRoutes from './routes/analytics';
+import faceRoutes from './routes/face';
+import mlRoutes from './routes/ml';
 
 // Initialize express app
 const app = express();
@@ -26,15 +28,10 @@ app.use(cors());
 app.use(morgan('dev'));
 
 // Database connection
-mongoose
-  .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/attendance')
-  .then(() => {
-    console.log('Connected to MongoDB');
-  })
-  .catch((err) => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
-  });
+connectDB().catch((err) => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1);
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -42,6 +39,8 @@ app.use('/api/students', studentRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/compliance', complianceRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/face', faceRoutes);
+app.use('/api/ml', mlRoutes);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
@@ -55,4 +54,6 @@ app.use(errorHandler);
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV}`);
+  console.log(`API Health Check: http://localhost:${PORT}/health`);
 });

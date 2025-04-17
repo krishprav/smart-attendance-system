@@ -25,6 +25,9 @@ interface StudentAttendance {
   complianceScore: number;
 }
 
+import Layout from '@/components/layout/Layout';
+import { courses as realCourses } from '../../../data/courseData';
+
 export default function FacultyReports() {
   const [selectedTab, setSelectedTab] = useState<'attendance' | 'compliance' | 'student'>('attendance');
   const [dateRange, setDateRange] = useState<'week' | 'month' | 'semester'>('month');
@@ -33,46 +36,37 @@ export default function FacultyReports() {
   const [attendanceData, setAttendanceData] = useState<AttendanceData[]>([]);
   const [complianceData, setComplianceData] = useState<ComplianceData[]>([]);
   const [studentData, setStudentData] = useState<StudentAttendance[]>([]);
-  const [courses, setCourses] = useState<string[]>([]);
+  const [coursesList, setCoursesList] = useState<string[]>([]);
 
   useEffect(() => {
-    // Mock data loading
-    setTimeout(() => {
-      // Sample courses
-      const sampleCourses = ['CSE101', 'CSE202', 'MATH201', 'PHYS101'];
-      setCourses(sampleCourses);
+    setCoursesList(realCourses.map((c) => c.code));
 
-      // Sample attendance data
-      setAttendanceData([
-        { courseId: 'CSE101', attendanceRate: 87, sessionCount: 12, studentCount: 35 },
-        { courseId: 'CSE202', attendanceRate: 78, sessionCount: 8, studentCount: 28 },
-        { courseId: 'MATH201', attendanceRate: 92, sessionCount: 10, studentCount: 22 },
-        { courseId: 'PHYS101', attendanceRate: 83, sessionCount: 9, studentCount: 30 }
-      ]);
-
-      // Sample compliance data
-      setComplianceData([
-        { courseId: 'CSE101', idCardCompliance: 94, phoneCompliance: 88, overallCompliance: 91 },
-        { courseId: 'CSE202', idCardCompliance: 82, phoneCompliance: 77, overallCompliance: 80 },
-        { courseId: 'MATH201', idCardCompliance: 98, phoneCompliance: 95, overallCompliance: 97 },
-        { courseId: 'PHYS101', idCardCompliance: 89, phoneCompliance: 85, overallCompliance: 87 }
-      ]);
-
-      // Sample student data
-      setStudentData([
-        { studentId: 'ST0001', name: 'Alice Johnson', attendanceRate: 95, lastAttended: '2025-04-12T09:30:00', complianceScore: 98 },
-        { studentId: 'ST0002', name: 'Bob Smith', attendanceRate: 82, lastAttended: '2025-04-12T09:30:00', complianceScore: 89 },
-        { studentId: 'ST0003', name: 'Charlie Brown', attendanceRate: 78, lastAttended: '2025-04-11T14:15:00', complianceScore: 85 },
-        { studentId: 'ST0004', name: 'David Miller', attendanceRate: 92, lastAttended: '2025-04-12T09:30:00', complianceScore: 93 },
-        { studentId: 'ST0005', name: 'Eva Garcia', attendanceRate: 68, lastAttended: '2025-04-08T11:00:00', complianceScore: 75 },
-        { studentId: 'ST0006', name: 'Frank Wilson', attendanceRate: 88, lastAttended: '2025-04-12T09:30:00', complianceScore: 91 },
-        { studentId: 'ST0007', name: 'Grace Lee', attendanceRate: 97, lastAttended: '2025-04-12T09:30:00', complianceScore: 99 }
-      ]);
-
-      setLoading(false);
-    }, 1000);
-
-    // Real implementation would fetch data from API endpoints
+    setAttendanceData(
+      realCourses.map((course) => ({
+        courseId: course.code,
+        attendanceRate: Math.floor(75 + Math.random() * 20),
+        sessionCount: Math.floor(8 + Math.random() * 8),
+        studentCount: Math.floor(20 + Math.random() * 20)
+      }))
+    );
+    setComplianceData(
+      realCourses.map((course) => ({
+        courseId: course.code,
+        idCardCompliance: Math.floor(80 + Math.random() * 20),
+        phoneCompliance: Math.floor(70 + Math.random() * 25),
+        overallCompliance: Math.floor(75 + Math.random() * 20)
+      }))
+    );
+    setStudentData([
+      { studentId: 'ST0001', name: 'Alice Johnson', attendanceRate: 95, lastAttended: '2025-04-12T09:30:00', complianceScore: 98 },
+      { studentId: 'ST0002', name: 'Bob Smith', attendanceRate: 82, lastAttended: '2025-04-12T09:30:00', complianceScore: 89 },
+      { studentId: 'ST0003', name: 'Charlie Brown', attendanceRate: 78, lastAttended: '2025-04-11T14:15:00', complianceScore: 85 },
+      { studentId: 'ST0004', name: 'David Miller', attendanceRate: 92, lastAttended: '2025-04-12T09:30:00', complianceScore: 93 },
+      { studentId: 'ST0005', name: 'Eva Garcia', attendanceRate: 68, lastAttended: '2025-04-08T11:00:00', complianceScore: 75 },
+      { studentId: 'ST0006', name: 'Frank Wilson', attendanceRate: 88, lastAttended: '2025-04-12T09:30:00', complianceScore: 91 },
+      { studentId: 'ST0007', name: 'Grace Lee', attendanceRate: 97, lastAttended: '2025-04-12T09:30:00', complianceScore: 99 }
+    ]);
+    setLoading(false);
   }, []);
 
   // Filter data based on selected course
@@ -103,14 +97,15 @@ export default function FacultyReports() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <Layout>
+      <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Attendance Reports</h1>
           <div className="mt-4 md:mt-0">
             <Link 
               href="/" 
-              className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg transition"
+              className="bg-gray-50 border border-gray-300 text-gray-800 hover:bg-white px-6 py-3 rounded-xl shadow transition font-semibold"
             >
               Back to Home
             </Link>
@@ -118,7 +113,7 @@ export default function FacultyReports() {
         </div>
 
         {/* Filters Row */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+        <div className="bg-white rounded-xl shadow-lg p-4 mb-6 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
           <div>
             <label htmlFor="date-range" className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
             <select
@@ -141,13 +136,13 @@ export default function FacultyReports() {
               onChange={(e) => setCourseFilter(e.target.value)}
             >
               <option value="all">All Courses</option>
-              {courses.map(course => (
+              {coursesList.map(course => (
                 <option key={course} value={course}>{course}</option>
               ))}
             </select>
           </div>
           <div className="flex-grow md:text-right self-end">
-            <button className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-4 py-2 rounded transition">
+            <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl shadow transition font-semibold">
               Export Report
             </button>
           </div>
@@ -195,7 +190,7 @@ export default function FacultyReports() {
         {selectedTab === 'attendance' && (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Average Attendance</h3>
                 <div className="flex items-center">
                   <span className="text-3xl font-bold text-indigo-600">
@@ -206,7 +201,7 @@ export default function FacultyReports() {
                   <span className="ml-2 text-green-500 text-sm">↑ 3% from last month</span>
                 </div>
               </div>
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Total Sessions</h3>
                 <div className="flex items-center">
                   <span className="text-3xl font-bold text-indigo-600">
@@ -214,7 +209,7 @@ export default function FacultyReports() {
                   </span>
                 </div>
               </div>
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Total Students</h3>
                 <div className="flex items-center">
                   <span className="text-3xl font-bold text-indigo-600">
@@ -224,7 +219,7 @@ export default function FacultyReports() {
                   </span>
                 </div>
               </div>
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Low Attendance</h3>
                 <div className="flex items-center">
                   <span className="text-3xl font-bold text-red-500">
@@ -235,7 +230,7 @@ export default function FacultyReports() {
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800">Attendance by Course</h3>
               </div>
@@ -292,7 +287,7 @@ export default function FacultyReports() {
         {selectedTab === 'compliance' && (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">ID Card Compliance</h3>
                 <div className="flex items-center">
                   <span className="text-3xl font-bold text-indigo-600">
@@ -303,7 +298,7 @@ export default function FacultyReports() {
                   <span className="ml-2 text-green-500 text-sm">↑ 5% from last month</span>
                 </div>
               </div>
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Phone Usage Compliance</h3>
                 <div className="flex items-center">
                   <span className="text-3xl font-bold text-indigo-600">
@@ -314,7 +309,7 @@ export default function FacultyReports() {
                   <span className="ml-2 text-green-500 text-sm">↑ 2% from last month</span>
                 </div>
               </div>
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Overall Compliance</h3>
                 <div className="flex items-center">
                   <span className="text-3xl font-bold text-indigo-600">
@@ -327,7 +322,7 @@ export default function FacultyReports() {
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800">Compliance by Course</h3>
               </div>
@@ -401,7 +396,7 @@ export default function FacultyReports() {
         {/* Student Performance Tab */}
         {selectedTab === 'student' && (
           <div>
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-gray-800">Student Attendance & Compliance</h3>
                 <div className="relative">
@@ -453,7 +448,7 @@ export default function FacultyReports() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="mr-2 w-24 bg-gray-200 rounded-full h-2.5">
-                              <div 
+                              <div
                                 className={`h-2.5 rounded-full ${
                                   student.complianceScore >= 90 ? 'bg-green-500' : 
                                   student.complianceScore >= 75 ? 'bg-yellow-500' : 'bg-red-500'
@@ -473,7 +468,7 @@ export default function FacultyReports() {
                 </table>
               </div>
               <div className="px-6 py-4 bg-gray-50 flex items-center justify-between">
-                <div className="text-sm text-gray-700">
+                <div className="text-gray-900">
                   Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredStudentData.length}</span> of <span className="font-medium">{filteredStudentData.length}</span> students
                 </div>
                 <div className="flex space-x-2">
@@ -486,5 +481,6 @@ export default function FacultyReports() {
         )}
       </div>
     </div>
+    </Layout>
   );
 }

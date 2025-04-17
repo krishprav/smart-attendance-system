@@ -32,14 +32,14 @@ export default function Home() {
             {!authState && (
               <div className="flex flex-col space-y-4">
                 <button
-                  onClick={() => setAuthState('student')}
-                  className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-medium transition-colors"
+                  onClick={() => router.push('/login?role=student')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-xl font-semibold transition-colors"
                 >
                   Student Portal
                 </button>
                 <button
-                  onClick={() => setAuthState('faculty')}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-lg font-medium transition-colors"
+                  onClick={() => router.push('/login?role=faculty')}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-xl font-semibold transition-colors"
                 >
                   Faculty Portal
                 </button>

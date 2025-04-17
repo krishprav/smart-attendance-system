@@ -7,8 +7,14 @@ export interface IAttendance extends mongoose.Document {
   markedBy: string;
   markedAt: Date;
   faceVerified: boolean;
+  verificationMethod: string;
   verificationImage?: string;
   verificationConfidence?: number;
+  verificationDetails?: {
+    timestamp: Date;
+    success: boolean;
+    message?: string;
+  };
   location?: {
     latitude: number;
     longitude: number;
@@ -46,6 +52,11 @@ const AttendanceSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  verificationMethod: {
+    type: String,
+    enum: ['face', 'manual', 'idcard', 'qrcode', 'rfid'],
+    default: 'manual',
+  },
   verificationImage: {
     type: String,
   },
@@ -53,6 +64,17 @@ const AttendanceSchema = new mongoose.Schema({
     type: Number,
     min: 0,
     max: 1,
+  },
+  verificationDetails: {
+    timestamp: {
+      type: Date,
+      default: Date.now,
+    },
+    success: {
+      type: Boolean,
+      default: false,
+    },
+    message: String,
   },
   location: {
     latitude: {

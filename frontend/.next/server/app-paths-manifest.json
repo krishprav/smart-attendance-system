@@ -1,8 +1,10 @@
 {
-  "/login/page": "app/login/page.js",
+  "/not-found": "app/not-found.js",
   "/page": "app/page.js",
-  "/register/page": "app/register/page.js",
-  "/student/profile/page": "app/student/profile/page.js",
-  "/student/face-registration/page": "app/student/face-registration/page.js",
-  "/student/attendance/page": "app/student/attendance/page.js"
+  "/login/page": "app/login/page.js",
+  "/faculty/classes/page": "app/faculty/classes/page.js",
+  "/faculty/start-session/page": "app/faculty/start-session/page.js",
+  "/faculty/reports/page": "app/faculty/reports/page.js",
+  "/faculty/analytics/page": "app/faculty/analytics/page.js",
+  "/student/face-registration/page": "app/student/face-registration/page.js"
 }

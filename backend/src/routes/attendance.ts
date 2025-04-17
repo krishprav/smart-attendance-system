@@ -10,6 +10,7 @@ import {
   getSessionAttendance,
   getStudentAttendanceHistory,
 } from '../controllers/attendance';
+import { markAttendanceWithFace } from '../controllers/faceAttendance';
 import { protect, authorize, checkAccess } from '../middleware/auth';
 
 const router = express.Router();
@@ -59,7 +60,7 @@ router.get(
 );
 
 // @route   POST /api/attendance/sessions/:id/mark
-// @desc    Mark attendance with face recognition
+// @desc    Mark attendance with face recognition (legacy method)
 // @access  Private (Student only)
 router.post(
   '/sessions/:id/mark',
@@ -68,6 +69,19 @@ router.post(
     body('image', 'Image is required').not().isEmpty(),
   ],
   markAttendance
+);
+
+// @route   POST /api/attendance/face
+// @desc    Mark attendance with face recognition (new method)
+// @access  Private (Student only)
+router.post(
+  '/face',
+  authorize(['student']),
+  [
+    body('sessionId', 'Session ID is required').not().isEmpty(),
+    body('image', 'Image is required').not().isEmpty(),
+  ],
+  markAttendanceWithFace
 );
 
 // @route   POST /api/attendance/sessions/:id/manual

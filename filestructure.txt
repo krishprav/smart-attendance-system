@@ -4,7 +4,9 @@
     |-- .env.example
     |-- build.bat
     |-- build_and_run.bat
+    |-- DATABASE.md
     |-- dev.bat
+    |-- docker-compose.mongodb.yml
     |-- package-lock.json
     |-- package.json
     |-- run_dev.bat
@@ -12,6 +14,8 @@
     |-- run_dev3.bat
     |-- run_dev_fixed.bat
     |-- run_server.bat
+    |-- setup-db.bat
+    |-- setup-db.sh
     |-- src
         |-- config
             |-- index.ts
@@ -20,6 +24,8 @@
             |-- attendance.ts
             |-- auth.ts
             |-- compliance.ts
+            |-- faceAttendance.ts
+            |-- faceRecognition.ts
             |-- students
             |-- students.ts
         |-- index.ts
@@ -40,13 +46,28 @@
             |-- attendance.ts
             |-- auth.ts
             |-- compliance.ts
+            |-- face.ts
+            |-- faculty.js
             |-- ml.ts
             |-- students.ts
+        |-- scripts
+            |-- db-setup.ts
+            |-- mock-ml-api.ts
+            |-- test-db-connection.ts
         |-- services
         |-- types
             |-- jwt.d.ts
         |-- utils
+            |-- db.ts
             |-- email.ts
+    |-- start-mock-ml-api.bat
+    |-- start-mock-ml-api.sh
+    |-- start-mongodb.bat
+    |-- start-mongodb.sh
+    |-- stop-mongodb.bat
+    |-- stop-mongodb.sh
+    |-- test-db.bat
+    |-- test-db.sh
     |-- tsconfig.json
 |-- docker
     |-- backend.Dockerfile
@@ -56,7 +77,6 @@
     |-- frontend.Dockerfile
     |-- ml-services.Dockerfile
     |-- ml-services.fixed.Dockerfile
-|-- DOCUMENTATION.md
 |-- frontend
     |-- .env.local.example
     |-- dev-start.bat
@@ -67,10 +87,13 @@
     |-- postcss.config.js
     |-- public
         |-- iiit-manipur-logo.png
+        |-- iiit_manipur_timetable_jan_may_2025.png
+        |-- Time Table Jan 2025.pdf
     |-- src
         |-- app
             |-- debug
                 |-- page.tsx
+            |-- error.tsx
             |-- faculty
                 |-- analytics
                     |-- page.tsx
@@ -78,8 +101,10 @@
                     |-- page.tsx
                 |-- monitor
                     |-- page.tsx
+                |-- page.tsx
                 |-- reports
                     |-- page.tsx
+                    |-- SessionCreate.tsx
                 |-- start-session
                     |-- page.tsx
             |-- globals.css
@@ -95,12 +120,18 @@
                     |-- page.tsx
                 |-- classes
                     |-- page.tsx
+                |-- face
+                    |-- page.tsx
                 |-- face-registration
                     |-- page.tsx
                 |-- layout.tsx
                 |-- profile
                     |-- page.tsx
                 |-- reports
+                    |-- page.tsx
+                |-- schedule
+                    |-- page.tsx
+                |-- sessions
                     |-- page.tsx
             |-- utils
                 |-- page.tsx
@@ -109,6 +140,13 @@
                 |-- CAMERA_SETUP.md
                 |-- README.md
                 |-- WebcamCapture.tsx
+            |-- charts
+                |-- AttendanceTrendChart.tsx
+                |-- EngagementMetricsChart.tsx
+                |-- VerificationMethodChart.tsx
+            |-- face
+                |-- FaceAttendance.tsx
+                |-- FaceRegistration.tsx
             |-- face-recognition
                 |-- AttendanceMarker.tsx
                 |-- FaceRegistration.tsx
@@ -119,35 +157,51 @@
                 |-- Layout.tsx
                 |-- Navbar.tsx
             |-- monitoring
+                |-- IDCardComplianceMonitor.tsx
+                |-- SentimentAnalysisDisplay.tsx
                 |-- SessionMonitor.tsx
             |-- providers
                 |-- Providers.tsx
                 |-- ToastProvider.tsx
+            |-- schedule
+                |-- ClassSchedule.tsx
             |-- ui
+                |-- AnalyticsCard.tsx
                 |-- Button.tsx
                 |-- Card.tsx
                 |-- DashboardCard.tsx
                 |-- Loader.tsx
                 |-- Section.tsx
+                |-- select.tsx
+                |-- tabs.tsx
+                |-- toast.tsx
         |-- config
             |-- auth.ts
         |-- contexts
             |-- AuthContext.tsx
+        |-- data
+            |-- courseData.ts
+            |-- sessionsData.ts
         |-- hooks
+            |-- useAuth.ts
         |-- lib
             |-- api
                 |-- index.ts
+            |-- api.ts
             |-- auth-helpers.ts
             |-- auth.ts
+            |-- utils.ts
         |-- middleware.ts
         |-- types
             |-- auth.ts
     |-- tailwind.config.js
     |-- TROUBLESHOOTING.md
     |-- tsconfig.json
+    |-- tsconfig.tsbuildinfo
 |-- INSTALL.md
 |-- ml-services
     |-- api-gateway
+        |-- api_gateway.log
         |-- app.py
         |-- requirements.txt
     |-- face-recognition
@@ -171,16 +225,11 @@
         |-- requirements.txt
         |-- requirements_modified.txt
     |-- README.md
-    |-- run_all_services.bat
     |-- sentiment-analysis
         |-- app.py
         |-- data
             |-- sentiment
         |-- models
         |-- requirements.txt
-    |-- setup_all_services.bat
-    |-- setup_and_run.bat
 |-- README.md
-|-- start_system.bat
-|-- system_health_check.bat
 |-- TROUBLESHOOTING.md

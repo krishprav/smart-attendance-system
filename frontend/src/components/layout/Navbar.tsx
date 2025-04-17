@@ -43,7 +43,7 @@ export default function Navbar() {
     router.push('/');
   };
 
-  const handleLogin = (role: 'student' | 'faculty') => {
+  const handleLogin = () => {
     router.push('/login');
   };
 
@@ -60,17 +60,17 @@ export default function Navbar() {
             </div>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">
-                <NavLink href="/">Home</NavLink>
-                
+  <NavLink href="/">Home</NavLink>
+
                 {user && user.role === 'student' && (
                   <>
                     <NavLink href="/student/attendance">My Attendance</NavLink>
-                    <NavLink href="/student/profile" scroll={true}>Profile</NavLink>
-                    <NavLink href="/student/face-registration">Face Registration</NavLink>
+                    <NavLink href="/student/profile">Profile</NavLink>
+                    <NavLink href="/student/face">Face Recognition</NavLink>
                     <NavLink href="/student/reports">Reports</NavLink>
                   </>
                 )}
-                
+
                 {user && user.role === 'faculty' && (
                   <>
                     <NavLink href="/faculty/start-session">Start Session</NavLink>
@@ -79,7 +79,7 @@ export default function Navbar() {
                     <NavLink href="/faculty/analytics">Analytics</NavLink>
                   </>
                 )}
-                
+
                 {user && user.role === 'admin' && (
                   <>
                     <NavLink href="/admin/dashboard">Dashboard</NavLink>
@@ -96,14 +96,16 @@ export default function Navbar() {
               {!user ? (
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => handleLogin('student')}
+                    type="button"
+                    onClick={() => handleLogin()}
                     className="px-3 py-2 rounded-md text-sm font-medium bg-blue-600 text-white hover:bg-blue-500"
                   >
                     Student Login
                   </button>
                   <button
-                    onClick={() => handleLogin('faculty')}
-                    className="px-3 py-2 rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-500"
+                    type="button"
+                    onClick={() => handleLogin()}
+                    className="px-3 py-2 rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-blue-500"
                   >
                     Faculty Login
                   </button>
@@ -114,6 +116,7 @@ export default function Navbar() {
                     {user.name} ({user.role})
                   </div>
                   <button
+                    type="button"
                     onClick={handleLogout}
                     className="px-3 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-500"
                   >
@@ -125,6 +128,7 @@ export default function Navbar() {
           </div>
           <div className="-mr-2 flex md:hidden">
             <button
+              type="button"
               onClick={toggleMenu}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-blue-800 focus:ring-white"
             >
@@ -176,7 +180,7 @@ export default function Navbar() {
           >
             Home
           </Link>
-          
+
           {user && user.role === 'student' && (
             <>
               <Link
@@ -192,10 +196,10 @@ export default function Navbar() {
                 Profile
               </Link>
               <Link
-                href="/student/face-registration"
+                href="/student/face"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-blue-600 hover:text-white"
               >
-                Face Registration
+                Face Recognition
               </Link>
               <Link
                 href="/student/reports"
@@ -205,7 +209,7 @@ export default function Navbar() {
               </Link>
             </>
           )}
-          
+
           {user && user.role === 'faculty' && (
             <>
               <Link
@@ -240,13 +244,15 @@ export default function Navbar() {
             {!user ? (
               <div className="space-y-1">
                 <button
-                  onClick={() => handleLogin('student')}
+                  type="button"
+                  onClick={() => handleLogin()}
                   className="block w-full text-left px-3 py-2 rounded-md text-base font-medium bg-blue-600 text-white hover:bg-blue-500"
                 >
                   Student Login
                 </button>
                 <button
-                  onClick={() => handleLogin('faculty')}
+                  type="button"
+                  onClick={() => handleLogin()}
                   className="block w-full text-left px-3 py-2 rounded-md text-base font-medium bg-indigo-600 text-white hover:bg-indigo-500"
                 >
                   Faculty Login
@@ -258,6 +264,7 @@ export default function Navbar() {
                   {user.name} ({user.role})
                 </div>
                 <button
+                  type="button"
                   onClick={handleLogout}
                   className="block w-full text-left px-3 py-2 rounded-md text-base font-medium bg-red-600 text-white hover:bg-red-500"
                 >

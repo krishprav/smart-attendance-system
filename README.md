@@ -71,6 +71,19 @@ docker-compose up -d
 
 See the [DOCUMENTATION.md](./DOCUMENTATION.md) file for detailed setup instructions.
 
+### Database Setup
+
+The system uses MongoDB for data storage. For detailed database setup instructions, see [DATABASE.md](./backend/DATABASE.md).
+
+```bash
+# Initialize the database with seed data
+cd backend
+npm run setup-db
+
+# Test database connection
+npm run test-db
+```
+
 ## Documentation
 
 For comprehensive documentation including setup instructions, user guides, API documentation, and more, please see:

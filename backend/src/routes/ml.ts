@@ -27,14 +27,14 @@ async function proxyML(req, res, path, method = 'post') {
 // All routes below this require authentication
 router.use(protect);
 
-// @route   POST /api/face/register
-router.post('/face/register', (req, res) => proxyML(req, res, '/face/register'));
+// @route   POST /api/ml/face/register
+router.post('/face/register', (req, res) => proxyML(req, res, '/api/face/register'));
 
-// @route   POST /api/face/verify
-router.post('/face/verify', (req, res) => proxyML(req, res, '/face/verify'));
+// @route   POST /api/ml/face/verify
+router.post('/face/verify', (req, res) => proxyML(req, res, '/api/face/verify'));
 
-// @route   POST /api/face/analyze
-router.post('/face/analyze', (req, res) => proxyML(req, res, '/face/analyze'));
+// @route   POST /api/ml/face/analyze
+router.post('/face/analyze', (req, res) => proxyML(req, res, '/api/face/analyze'));
 
 // @route   POST /api/object-detection/idcard
 router.post('/object-detection/idcard', (req, res) => proxyML(req, res, '/object-detection/idcard'));

@@ -64,13 +64,21 @@ export default function StudentProfile() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-lg shadow overflow-hidden my-8">
+    <div className="max-w-4xl mx-auto px-4 py-8 bg-gradient-to-br from-blue-100 via-white to-blue-200 min-h-screen">
+      <div className="flex flex-col items-center mb-10">
+        <div className="w-28 h-28 rounded-full bg-blue-200 border-4 border-blue-400 shadow-lg flex items-center justify-center text-4xl font-bold text-blue-700 mb-3">
+          {profile?.name ? profile.name[0] : '?'}
+        </div>
+        <div className="text-2xl font-bold text-blue-900">{profile?.name}</div>
+        <div className="text-md text-blue-800">{profile?.email}</div>
+        <div className="text-md text-blue-800">Student ID: {profile?.studentId}</div>
+      </div>
       <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">Student Profile</h1>
+          <h1 className="text-4xl font-extrabold text-blue-900 mb-8 drop-shadow">Student Profile</h1>
           <Link 
             href="/" 
-            className="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-blue-50 transition"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md transition"
           >
             Back to Home
           </Link>
@@ -94,8 +102,8 @@ export default function StudentProfile() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-gray-200 pt-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">Account Information</h3>
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">Account Information</h3>
+              <div className="bg-white rounded-2xl shadow-xl border border-blue-200 p-8 mb-8">
                 <div>
                   <span className="text-gray-500 text-sm">Student ID</span>
                   <p className="font-medium">{profile.studentId}</p>
@@ -134,37 +142,37 @@ export default function StudentProfile() {
           </div>
           
           <div className="mt-8 border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4">Recent Activity</h3>
+            <h3 className="text-lg font-bold text-blue-900 mb-4">Recent Activity</h3>
             <div className="space-y-4">
               <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex justify-between">
                   <span className="font-medium">Attendance Marked</span>
-                  <span className="text-gray-500 text-sm">Today, 9:30 AM</span>
+                  <span className="text-blue-700 text-sm">Today, 9:30 AM</span>
                 </div>
-                <p className="text-gray-600 text-sm mt-1">CSE101 Introduction to Computer Science</p>
+                <p className="text-gray-800 text-sm mt-1">CSE101 Introduction to Computer Science</p>
               </div>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex justify-between">
                   <span className="font-medium">Attendance Marked</span>
-                  <span className="text-gray-500 text-sm">Yesterday, 2:15 PM</span>
+                  <span className="text-blue-700 text-sm">Yesterday, 2:15 PM</span>
                 </div>
-                <p className="text-gray-600 text-sm mt-1">MATH201 Advanced Calculus</p>
+                <p className="text-gray-800 text-sm mt-1">MATH201 Advanced Calculus</p>
               </div>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex justify-between">
-                  <span className="font-medium">Face ID Updated</span>
-                  <span className="text-gray-500 text-sm">3 days ago</span>
+                  <span className="font-semibold text-blue-900">Face ID Updated</span>
+                  <span className="text-blue-700 text-sm">3 days ago</span>
                 </div>
-                <p className="text-gray-600 text-sm mt-1">Face recognition profile was updated</p>
+                <p className="text-gray-800 text-sm mt-1">Face recognition profile was updated</p>
               </div>
             </div>
           </div>
           
           <div className="mt-8 flex space-x-4">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+            <button className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-2 rounded-xl font-bold shadow transition text-lg">
               Edit Profile
             </button>
-            <button className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg transition">
+            <button className="bg-blue-100 border border-blue-300 text-blue-900 hover:bg-blue-200 px-6 py-2 rounded-xl font-semibold shadow transition text-lg">
               Change Password
             </button>
           </div>
