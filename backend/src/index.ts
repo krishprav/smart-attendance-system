@@ -3,7 +3,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { errorHandler, notFound } from './middleware/error';
-import { connectDB } from './utils/db';
+import { connectPrismaDB } from './utils/dbPrisma';
 
 // Load environment variables
 dotenv.config();
@@ -14,7 +14,8 @@ import studentRoutes from './routes/students';
 import attendanceRoutes from './routes/attendance';
 import complianceRoutes from './routes/compliance';
 import analyticsRoutes from './routes/analytics';
-import faceRoutes from './routes/face';
+import faceRoutes from './routes/face'; // Face recognition routes
+import faceRoutesController from './routes/faceRoutes'; // Face controller routes
 import mlRoutes from './routes/ml';
 
 // Initialize express app
@@ -28,10 +29,15 @@ app.use(cors());
 app.use(morgan('dev'));
 
 // Database connection
-connectDB().catch((err) => {
-  console.error('MongoDB connection error:', err);
-  process.exit(1);
-});
+// Connect to PostgreSQL with Prisma (primary database)
+connectPrismaDB()
+  .then(() => {
+    console.log('PostgreSQL connected successfully!');
+  })
+  .catch((err) => {
+    console.error('PostgreSQL connection error:', err);
+    process.exit(1); // Exit if PostgreSQL connection fails (critical database)
+  });
 
 // Routes
 app.use('/api/auth', authRoutes);

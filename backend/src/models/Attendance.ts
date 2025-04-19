@@ -14,6 +14,10 @@ export interface IAttendance extends mongoose.Document {
     timestamp: Date;
     success: boolean;
     message?: string;
+    confidence?: number;
+    method?: string;
+    faceQuality?: string;
+    faceCount?: number;
   };
   location?: {
     latitude: number;
@@ -75,6 +79,10 @@ const AttendanceSchema = new mongoose.Schema({
       default: false,
     },
     message: String,
+    confidence: Number,
+    method: String,
+    faceQuality: String,
+    faceCount: Number,
   },
   location: {
     latitude: {

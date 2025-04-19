@@ -2,22 +2,27 @@
 |-- backend
     |-- .env
     |-- .env.example
-    |-- build.bat
-    |-- build_and_run.bat
+    |-- apply-schema-changes.bat
     |-- DATABASE.md
-    |-- dev.bat
-    |-- docker-compose.mongodb.yml
+    |-- FACE_RECOGNITION.md
+    |-- FIXES.md
+    |-- init-prisma.bat
     |-- package-lock.json
     |-- package.json
-    |-- run_dev.bat
-    |-- run_dev2.bat
-    |-- run_dev3.bat
-    |-- run_dev_fixed.bat
-    |-- run_server.bat
-    |-- setup-db.bat
-    |-- setup-db.sh
+    |-- POSTGRES.md
+    |-- prisma
+        |-- migrations
+            |-- 20250417201340_init
+                |-- migration.sql
+            |-- migration_lock.toml
+        |-- schema.prisma
+        |-- seed.ts
+        |-- setup-postgres.sql
+    |-- prisma-fix.bat
+    |-- run-server.bat
     |-- src
         |-- config
+            |-- googleAuth.ts
             |-- index.ts
         |-- controllers
             |-- analytics.ts
@@ -25,7 +30,11 @@
             |-- auth.ts
             |-- compliance.ts
             |-- faceAttendance.ts
+            |-- faceController.ts
             |-- faceRecognition.ts
+            |-- faceRegistration.ts
+            |-- faculty.ts
+            |-- groupAttendance.ts
             |-- students
             |-- students.ts
         |-- index.ts
@@ -39,45 +48,51 @@
             |-- AuditLog.ts
             |-- Compliance.ts
             |-- Engagement.ts
+            |-- FaceEncoding.ts
             |-- Session.ts
             |-- User.ts
+        |-- prisma-models
+            |-- user.ts
         |-- routes
             |-- analytics.ts
             |-- attendance.ts
             |-- auth.ts
             |-- compliance.ts
             |-- face.ts
+            |-- faceRoutes.ts
             |-- faculty.js
+            |-- faculty.ts
             |-- ml.ts
             |-- students.ts
         |-- scripts
+            |-- check-users.ts
             |-- db-setup.ts
+            |-- migrate-mongo-to-postgres.ts
             |-- mock-ml-api.ts
             |-- test-db-connection.ts
+            |-- test-face-recognition.ts
+            |-- test-postgres-connection.ts
         |-- services
+            |-- prismaService.ts
+            |-- websocketService.ts
         |-- types
+            |-- express.d.ts
             |-- jwt.d.ts
         |-- utils
             |-- db.ts
+            |-- dbPrisma.ts
             |-- email.ts
-    |-- start-mock-ml-api.bat
-    |-- start-mock-ml-api.sh
-    |-- start-mongodb.bat
-    |-- start-mongodb.sh
-    |-- stop-mongodb.bat
-    |-- stop-mongodb.sh
-    |-- test-db.bat
-    |-- test-db.sh
+            |-- logger.ts
+            |-- prisma.ts
+    |-- start-postgres.bat
+    |-- stop-postgres.bat
+    |-- test-face-recognition.bat
     |-- tsconfig.json
 |-- docker
-    |-- backend.Dockerfile
-    |-- docker-compose.simple.yml
-    |-- docker-compose.yml
-    |-- docker_management.bat
-    |-- frontend.Dockerfile
-    |-- ml-services.Dockerfile
-    |-- ml-services.fixed.Dockerfile
+    |-- docker-compose.postgres.yml
+|-- DOCUMENTATION.md
 |-- frontend
+    |-- .env.local
     |-- .env.local.example
     |-- dev-start.bat
     |-- install_dependencies.bat
@@ -91,6 +106,15 @@
         |-- Time Table Jan 2025.pdf
     |-- src
         |-- app
+            |-- api
+                |-- db
+                    |-- init
+                        |-- route.ts
+                |-- faculty
+                    |-- classes
+                        |-- route.ts
+                    |-- reports
+                        |-- route.ts
             |-- debug
                 |-- page.tsx
             |-- error.tsx
@@ -99,14 +123,19 @@
                     |-- page.tsx
                 |-- classes
                     |-- page.tsx
+                |-- layout.tsx
                 |-- monitor
                     |-- page.tsx
                 |-- page.tsx
                 |-- reports
                     |-- page.tsx
                     |-- SessionCreate.tsx
+                |-- sessions
+                    |-- [id]
+                        |-- page.tsx
                 |-- start-session
                     |-- page.tsx
+                |-- test-layout
             |-- globals.css
             |-- layout.tsx
             |-- login
@@ -119,6 +148,8 @@
                 |-- attendance
                     |-- page.tsx
                 |-- classes
+                    |-- page.tsx
+                |-- dashboard
                     |-- page.tsx
                 |-- face
                     |-- page.tsx
@@ -133,9 +164,12 @@
                     |-- page.tsx
                 |-- sessions
                     |-- page.tsx
+                |-- timetable
             |-- utils
                 |-- page.tsx
         |-- components
+            |-- attendance
+                |-- GroupAttendance.tsx
             |-- camera
                 |-- CAMERA_SETUP.md
                 |-- README.md
@@ -153,6 +187,7 @@
                 |-- FaceRegistrationSimple.tsx
                 |-- FirstTimeFaceRegistration.tsx
             |-- layout
+                |-- FacultyNavbar.tsx
                 |-- Footer.tsx
                 |-- Layout.tsx
                 |-- Navbar.tsx
@@ -163,25 +198,35 @@
             |-- providers
                 |-- Providers.tsx
                 |-- ToastProvider.tsx
+            |-- QRCodeGenerator.tsx
+            |-- registration
+                |-- FaceRegistrationStep.tsx
             |-- schedule
                 |-- ClassSchedule.tsx
+            |-- theme-provider.tsx
+            |-- timetable
             |-- ui
                 |-- AnalyticsCard.tsx
                 |-- Button.tsx
                 |-- Card.tsx
                 |-- DashboardCard.tsx
+                |-- DatePicker.tsx
                 |-- Loader.tsx
                 |-- Section.tsx
                 |-- select.tsx
                 |-- tabs.tsx
                 |-- toast.tsx
+            |-- WebcamCapture.tsx
         |-- config
             |-- auth.ts
         |-- contexts
             |-- AuthContext.tsx
         |-- data
             |-- courseData.ts
+            |-- facultyData.ts
             |-- sessionsData.ts
+            |-- studentData.ts
+            |-- timetableData.ts
         |-- hooks
             |-- useAuth.ts
         |-- lib
@@ -190,14 +235,23 @@
             |-- api.ts
             |-- auth-helpers.ts
             |-- auth.ts
+            |-- db.ts
+            |-- initDb.ts
+            |-- schema.sql
+            |-- services
             |-- utils.ts
         |-- middleware.ts
+        |-- services
+            |-- api.ts
+            |-- faceRecognition.ts
         |-- types
             |-- auth.ts
     |-- tailwind.config.js
     |-- TROUBLESHOOTING.md
     |-- tsconfig.json
     |-- tsconfig.tsbuildinfo
+|-- GOOGLE_OAUTH_SETUP.md
+|-- GOOGLE_OAUTH_SETUP_DETAILED.md
 |-- INSTALL.md
 |-- ml-services
     |-- api-gateway
@@ -209,6 +263,7 @@
         |-- app_modified.py
         |-- data
             |-- faces
+        |-- identify_multiple.py
         |-- models
         |-- requirements.txt
         |-- requirements_modified.txt
@@ -225,11 +280,19 @@
         |-- requirements.txt
         |-- requirements_modified.txt
     |-- README.md
+    |-- run_all_services.bat
     |-- sentiment-analysis
         |-- app.py
         |-- data
             |-- sentiment
         |-- models
         |-- requirements.txt
+    |-- setup_all_services.bat
+    |-- setup_and_run.bat
+|-- POSTGRES_SETUP.md
 |-- README.md
+|-- start_system.bat
+|-- system_health_check.bat
 |-- TROUBLESHOOTING.md
+|-- update-google-client-id.bat
+|-- update-google-client-id.sh

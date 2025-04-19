@@ -1,9 +1,10 @@
 'use client';
 
+import { Inter } from 'next/font/google';
 import './globals.css';
-import ToastProvider from '@/components/providers/ToastProvider';
 import Providers from '@/components/providers/Providers';
-import Navbar from '@/components/layout/Navbar';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export default function RootLayout({
   children,
@@ -11,12 +12,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-gray-100">
+    <html lang="en" className="bg-white">
+      <head>
+        <title>Smart Attendance System</title>
+        <meta name="description" content="AI-Powered Smart Attendance & Behavior Monitoring System" />
+      </head>
+      <body className={`${inter.className} bg-white`}>
         <Providers>
-          <Navbar />
-          {children}
-          <ToastProvider />
+          <div className="flex flex-col min-h-screen">
+            <main className="flex-grow">{children}</main>
+          </div>
         </Providers>
       </body>
     </html>

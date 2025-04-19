@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Navbar from '@/components/layout/Navbar';
 
 export default function Home() {
   const [authState, setAuthState] = useState<'student' | 'faculty' | null>(null);
@@ -17,7 +18,9 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-indigo-100">
+    <>
+      <Navbar />
+      <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-4xl w-full bg-white rounded-2xl shadow-lg overflow-hidden">
         <div className="flex flex-col sm:flex-row">
           <div className="sm:w-1/2 p-8 flex flex-col justify-center">
@@ -159,5 +162,6 @@ export default function Home() {
         </div>
       </div>
     </main>
+    </>
   );
 }

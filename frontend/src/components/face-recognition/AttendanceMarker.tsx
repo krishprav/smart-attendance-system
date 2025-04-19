@@ -1,322 +1,344 @@
-'use client';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import Webcam from 'react-webcam';
+import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
+import { io, Socket } from 'socket.io-client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { toast } from 'react-hot-toast';
-import WebcamCapture from '@/components/camera/WebcamCapture';
-import { BiUser, BiCheckCircle, BiErrorCircle, BiIdCard, BiMobile, BiHappy } from 'react-icons/bi';
-import { FcApproval, FcCancel } from 'react-icons/fc';
-import axios from 'axios';
-
-// ML API URL
-const ML_API_URL = process.env.NEXT_PUBLIC_ML_API_URL || 'http://localhost:8080';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-
-interface SessionProps {
+interface AttendanceMarkerProps {
   sessionId: string;
-  courseCode: string;
-  courseName: string;
-  instructor: string;
-  startTime: string;
-  endTime: string;
+  courseId: string;
+  onAttendanceMarked?: (success: boolean) => void;
+  onCancel?: () => void;
 }
 
-export default function AttendanceMarker({ sessionInfo }: { sessionInfo: SessionProps }) {
-  const [capturedImage, setCapturedImage] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
-  const [isMarked, setIsMarked] = useState(false);
-  const [analysisResults, setAnalysisResults] = useState<any>(null);
-  const [countdown, setCountdown] = useState(0);
-  const [showCamera, setShowCamera] = useState(true);
-  const [studentId, setStudentId] = useState('STUDENT123'); // Mock student ID
+const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
+  sessionId,
+  courseId,
+  onAttendanceMarked,
+  onCancel
+}) => {
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isCameraReady, setIsCameraReady] = useState(false);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
+  const [attendanceStatus, setAttendanceStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
+  const [socketConnected, setSocketConnected] = useState(false);
   
-  // Check if student already marked attendance
+  const webcamRef = useRef<Webcam>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const { user, token } = useAuth();
+
+  // Initialize WebSocket connection
   useEffect(() => {
-    const checkAttendanceStatus = async () => {
+    if (!token) return;
+
+    // Connect to WebSocket server
+    const socket = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000', {
+      auth: {
+        token
+      }
+    });
+
+    socket.on('connect', () => {
+      console.log('Socket connected');
+      setSocketConnected(true);
+      
+      // Join the session room
+      socket.emit('join_session', { sessionId });
+    });
+
+    socket.on('connection_success', (data) => {
+      console.log('Connection success:', data);
+    });
+
+    socket.on('session_joined', (data) => {
+      console.log('Joined session:', data);
+    });
+
+    socket.on('attendance_update', (data) => {
+      console.log('Attendance update:', data);
+      
+      // If this update is for the current user
+      if (user && data.student && data.student.id === user.id) {
+        setAttendanceStatus('success');
+        setMessage(`Your attendance has been marked as ${data.status || 'present'}`);
+        
+        if (onAttendanceMarked) {
+          onAttendanceMarked(true);
+        }
+      }
+    });
+
+    socket.on('session_ended', () => {
+      setError('This session has ended.');
+      setAttendanceStatus('error');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected');
+      setSocketConnected(false);
+    });
+
+    socketRef.current = socket;
+
+    // Cleanup function
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, [token, sessionId, user, onAttendanceMarked]);
+
+  // Check if attendance is already marked
+  useEffect(() => {
+    const checkAttendance = async () => {
+      if (!sessionId || !user) return;
+      
       try {
-        // Mock API call for demo
-        // In production, use an actual API call
-        // const response = await axios.get(`${API_URL}/api/attendance/sessions/${sessionInfo.sessionId}/status/${studentId}`);
+        setIsProcessing(true);
+        const response = await api.get(`/attendance/session/${sessionId}`);
         
-        // Check localStorage for demo purposes
-        const markedSessions = JSON.parse(localStorage.getItem('markedSessions') || '[]');
-        const alreadyMarked = markedSessions.includes(sessionInfo.sessionId);
+        // Check if user's attendance is already marked
+        const attendanceRecords = response.data.data.attendance || [];
+        const userAttendance = attendanceRecords.find(
+          (record: any) => record.student._id === user.id
+        );
         
-        if (alreadyMarked) {
-          setIsMarked(true);
-          setShowCamera(false);
-          toast.success('You have already marked attendance for this session.');
+        if (userAttendance && userAttendance.status === 'present') {
+          setAttendanceStatus('success');
+          setMessage('Your attendance has already been marked for this session.');
+          
+          if (onAttendanceMarked) {
+            onAttendanceMarked(true);
+          }
         }
       } catch (error) {
         console.error('Error checking attendance status:', error);
+      } finally {
+        setIsProcessing(false);
       }
     };
     
-    checkAttendanceStatus();
-  }, [sessionInfo.sessionId, studentId]);
-  
-  // Handle camera capture
-  const handleCapture = useCallback((imageSrc: string) => {
-    setCapturedImage(imageSrc);
-    
-    // Auto-submit after capture
-    submitAttendance(imageSrc);
-  }, []);
-  
-  // Submit attendance
-  const submitAttendance = async (imageSrc: string) => {
-    try {
-      setIsSubmitting(true);
-      toast.loading('Verifying your identity...');
-      
-      // In production, use actual API call
-      // const response = await axios.post(`${ML_API_URL}/api/analyze/all`, {
-      //   image: imageSrc,
-      //   studentId,
-      //   sessionId: sessionInfo.sessionId
-      // });
-      
-      // Mock API call with delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock response for demo - 85% success rate
-      const success = Math.random() < 0.85;
-      
-      toast.dismiss();
-      
-      if (success) {
-        // Mock analysis results
-        const mockResults = {
-          face: {
-            success: true,
-            studentId: studentId,
-            confidence: 'high',
-            message: 'Face verification successful'
-          },
-          idCard: {
-            idCardVisible: Math.random() < 0.7, // 70% chance ID is visible
-            confidence: 0.82,
-            message: 'ID card detection completed'
-          },
-          phone: {
-            phoneDetected: Math.random() < 0.3, // 30% chance phone is detected
-            confidence: 0.78,
-            message: 'Phone detection completed'
-          },
-          sentiment: {
-            success: true,
-            results: [{
-              faceId: 0,
-              engagement: parseFloat((0.65 + Math.random() * 0.3).toFixed(2)),
-              attention: parseFloat((0.7 + Math.random() * 0.3).toFixed(2)),
-              emotions: {
-                primary_emotion: ['happy', 'neutral', 'surprised'][Math.floor(Math.random() * 3)],
-                confidence: parseFloat((0.7 + Math.random() * 0.25).toFixed(2))
-              }
-            }]
-          }
-        };
-        
-        setAnalysisResults(mockResults);
-        setIsVerified(true);
-        setShowCamera(false);
-        
-        // Store in localStorage for demo
-        const markedSessions = JSON.parse(localStorage.getItem('markedSessions') || '[]');
-        localStorage.setItem('markedSessions', JSON.stringify([...markedSessions, sessionInfo.sessionId]));
-        
-        // Start countdown for attendance confirmation
-        startCountdown();
-        
-        toast.success('Identity verified! Marking attendance...');
+    checkAttendance();
+  }, [sessionId, user, onAttendanceMarked]);
+
+  const handleCameraReady = () => {
+    setIsCameraReady(true);
+  };
+
+  const switchCamera = () => {
+    setFacingMode(prevMode => prevMode === 'user' ? 'environment' : 'user');
+  };
+
+  const captureImage = useCallback(() => {
+    if (webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (imageSrc) {
+        setCapturedImage(imageSrc);
       } else {
-        toast.error('Face verification failed. Please try again with proper lighting and positioning.');
-        setCapturedImage('');
+        setError('Failed to capture image. Please try again.');
+      }
+    } else {
+      setError('Camera not available. Please check your camera settings.');
+    }
+  }, [webcamRef]);
+
+  const resetCapture = () => {
+    setCapturedImage(null);
+    setError(null);
+    setMessage(null);
+  };
+
+  const markAttendance = async () => {
+    if (!capturedImage) {
+      setError('No image captured. Please take a photo first.');
+      return;
+    }
+    
+    if (!user) {
+      setError('User not logged in. Please log in first.');
+      return;
+    }
+    
+    if (!sessionId) {
+      setError('Session ID is missing. Please try again.');
+      return;
+    }
+    
+    setIsProcessing(true);
+    setError(null);
+    setMessage(null);
+    setAttendanceStatus('pending');
+    
+    try {
+      const response = await api.post('/attendance/face', {
+        sessionId,
+        image: capturedImage,
+      });
+      
+      if (response.data.success) {
+        setAttendanceStatus('success');
+        setMessage('Attendance marked successfully!');
+        
+        // Call the completion callback
+        if (onAttendanceMarked) {
+          onAttendanceMarked(true);
+        }
+      } else {
+        setAttendanceStatus('error');
+        setError(response.data.message || 'Failed to mark attendance. Please try again.');
       }
     } catch (error) {
-      console.error('Error submitting attendance:', error);
-      toast.error('Error processing your attendance. Please try again.');
-      setCapturedImage('');
+      console.error('Error marking attendance:', error);
+      setAttendanceStatus('error');
+      
+      // @ts-ignore
+      const errorMessage = error.response?.data?.message || 'Failed to mark attendance. Please try again.';
+      setError(errorMessage);
+      
+      if (onAttendanceMarked) {
+        onAttendanceMarked(false);
+      }
     } finally {
-      setIsSubmitting(false);
+      setIsProcessing(false);
     }
   };
-  
-  // Start countdown for attendance confirmation
-  const startCountdown = () => {
-    setCountdown(5);
-    
-    const interval = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setIsMarked(true);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+
+  const videoConstraints = {
+    width: 720,
+    height: 480,
+    facingMode: facingMode,
   };
-  
-  // Reset attendance process
-  const resetAttendance = () => {
-    setCapturedImage('');
-    setIsVerified(false);
-    setIsMarked(false);
-    setAnalysisResults(null);
-    setShowCamera(true);
-    
-    // Remove from localStorage for demo
-    const markedSessions = JSON.parse(localStorage.getItem('markedSessions') || '[]');
-    localStorage.setItem(
-      'markedSessions', 
-      JSON.stringify(markedSessions.filter((id: string) => id !== sessionInfo.sessionId))
-    );
-  };
-  
-  if (isMarked) {
+
+  if (attendanceStatus === 'success' && message) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex flex-col items-center text-center p-6">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
-            <BiCheckCircle className="text-green-500 text-4xl" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Attendance Marked Successfully!</h2>
-          <p className="text-gray-600 mb-6">
-            Your attendance has been recorded for {sessionInfo.courseName} ({sessionInfo.courseCode}).
-          </p>
-          
-          {analysisResults && (
-            <div className="w-full max-w-lg bg-gray-50 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-gray-700 mb-3">Compliance Report</h3>
-              
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="bg-white p-3 rounded shadow-sm">
-                  <div className="flex justify-center mb-2">
-                    {analysisResults.idCard.idCardVisible ? 
-                      <FcApproval className="text-3xl" /> : 
-                      <FcCancel className="text-3xl" />}
-                  </div>
-                  <p className="text-sm font-medium">ID Card</p>
-                  <p className="text-xs text-gray-500">
-                    {analysisResults.idCard.idCardVisible ? 'Visible' : 'Not Visible'}
-                  </p>
-                </div>
-                
-                <div className="bg-white p-3 rounded shadow-sm">
-                  <div className="flex justify-center mb-2">
-                    {!analysisResults.phone.phoneDetected ? 
-                      <FcApproval className="text-3xl" /> : 
-                      <FcCancel className="text-3xl" />}
-                  </div>
-                  <p className="text-sm font-medium">Phone Usage</p>
-                  <p className="text-xs text-gray-500">
-                    {analysisResults.phone.phoneDetected ? 'Detected' : 'Not Detected'}
-                  </p>
-                </div>
-                
-                <div className="bg-white p-3 rounded shadow-sm">
-                  <div className="flex justify-center mb-2">
-                    <BiHappy className={`text-3xl ${
-                      analysisResults.sentiment.results[0].engagement > 0.7 ? 'text-green-500' :
-                      analysisResults.sentiment.results[0].engagement > 0.4 ? 'text-yellow-500' :
-                      'text-red-500'
-                    }`} />
-                  </div>
-                  <p className="text-sm font-medium">Engagement</p>
-                  <p className="text-xs text-gray-500">
-                    {Math.round(analysisResults.sentiment.results[0].engagement * 100)}% 
-                    ({analysisResults.sentiment.results[0].engagement > 0.7 ? 'Good' :
-                      analysisResults.sentiment.results[0].engagement > 0.4 ? 'Average' :
-                      'Low'})
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          <div className="flex gap-4">
-            <button
-              onClick={resetAttendance}
-              className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg shadow hover:bg-gray-300 transition"
-            >
-              Reset
-            </button>
-          </div>
+      <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md">
+        <div className="flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">Attendance Confirmed</h2>
+        <p className="text-gray-600 text-center mb-6">{message}</p>
+        <div className="flex space-x-4">
+          <button
+            onClick={() => onAttendanceMarked && onAttendanceMarked(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300"
+          >
+            Return to Dashboard
+          </button>
         </div>
       </div>
     );
   }
-  
-  if (isVerified && countdown > 0) {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex flex-col items-center text-center p-6">
-          <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-            <div className="text-3xl font-bold text-blue-500">{countdown}</div>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Processing Attendance</h2>
-          <p className="text-gray-600">
-            Submitting your attendance. Please wait...
-          </p>
-        </div>
-      </div>
-    );
-  }
-  
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-semibold mb-4">Mark Attendance</h2>
-      
-      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <p className="text-sm text-blue-800">
-              Session: <span className="font-medium">{sessionInfo.courseName} ({sessionInfo.courseCode})</span>
-              <br />
-              Instructor: <span className="font-medium">{sessionInfo.instructor}</span>
-              <br />
-              Time: <span className="font-medium">{sessionInfo.startTime} - {sessionInfo.endTime}</span>
-            </p>
-          </div>
-        </div>
+    <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">Mark Attendance</h2>
+      <div className="flex items-center mb-4">
+        <div className={`w-3 h-3 rounded-full mr-2 ${socketConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+        <span className="text-sm text-gray-600">
+          {socketConnected ? 'Connected to session' : 'Connecting to session...'}
+        </span>
       </div>
       
-      {showCamera && (
-        <div className="mb-6">
-          <p className="text-sm text-gray-600 mb-3">
-            Please look directly at the camera and ensure your face is clearly visible.
-            Make sure your ID card is visible and displayed prominently.
-          </p>
-          
-          <div className="border rounded-lg overflow-hidden">
-            <WebcamCapture
-              onCapture={handleCapture}
-              width={640}
-              height={480}
-              facingMode="user"
-              btnClassName="bg-blue-500 hover:bg-blue-600"
-            />
-          </div>
+      <p className="text-gray-600 text-center mb-6">
+        Position your face in the center of the camera frame and take a photo to mark your attendance for this class.
+      </p>
+      
+      {error && (
+        <div className="w-full bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <span className="block sm:inline">{error}</span>
         </div>
       )}
       
-      <div className="flex items-center justify-center">
-        {isSubmitting && (
-          <div className="flex items-center text-blue-700 gap-2">
-            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>Processing your attendance...</span>
+      {message && !error && (
+        <div className="w-full bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <span className="block sm:inline">{message}</span>
+        </div>
+      )}
+      
+      <div className="relative w-full max-w-md mb-4">
+        {!capturedImage ? (
+          <>
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+              videoConstraints={videoConstraints}
+              onUserMedia={handleCameraReady}
+              className="w-full h-auto rounded-lg shadow-sm"
+            />
+            <div className="absolute bottom-4 right-4 flex space-x-2">
+              <button
+                onClick={switchCamera}
+                className="p-2 bg-gray-800 bg-opacity-50 text-white rounded-full hover:bg-opacity-70 focus:outline-none"
+                title="Switch Camera"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-14a2 2 0 10-.001 0H5a1 1 0 01-1-1V1H3a1 1 0 00-1 1v12a5 5 0 0010 0V2a2 2 0 00-2-2h-1zm-1 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="relative">
+            <img src={capturedImage} alt="Captured" className="w-full h-auto rounded-lg shadow-sm" />
           </div>
         )}
       </div>
+      
+      <div className="flex space-x-4 mt-4">
+        {!capturedImage ? (
+          <>
+            <button
+              onClick={captureImage}
+              disabled={!isCameraReady || isProcessing || !socketConnected}
+              className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-300 ${(!isCameraReady || isProcessing || !socketConnected) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isProcessing ? 'Processing...' : 'Take Photo'}
+            </button>
+            <button
+              onClick={onCancel}
+              className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition duration-300"
+            >
+              Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={markAttendance}
+              disabled={isProcessing || !socketConnected}
+              className={`px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition duration-300 ${(isProcessing || !socketConnected) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isProcessing ? 'Processing...' : 'Mark Attendance'}
+            </button>
+            <button
+              onClick={resetCapture}
+              disabled={isProcessing}
+              className={`px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition duration-300 ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Retake
+            </button>
+          </>
+        )}
+      </div>
+      
+      <div className="w-full mt-6 p-4 bg-blue-50 rounded-lg">
+        <h3 className="font-medium text-blue-800">Course Details</h3>
+        <p className="text-sm text-blue-600">Course: {courseId}</p>
+        <p className="text-sm text-blue-600">Session ID: {sessionId}</p>
+      </div>
+      
+      <div className="mt-6 text-sm text-gray-500">
+        <p>Your face will be matched with your registered face data to verify your identity.</p>
+        <p className="mt-1">Please ensure your face is clearly visible and well-lit for accurate recognition.</p>
+      </div>
     </div>
   );
-}
+};
+
+export default AttendanceMarker;

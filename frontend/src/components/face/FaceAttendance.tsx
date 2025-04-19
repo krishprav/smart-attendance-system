@@ -42,24 +42,24 @@ const FaceAttendance: React.FC = () => {
     };
 
     fetchActiveSessions();
-    
+
     // Refresh sessions every 30 seconds
     const interval = setInterval(fetchActiveSessions, 30000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
   // Start camera
   const startCamera = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
           width: { ideal: 640 },
           height: { ideal: 480 },
           facingMode: 'user'
-        } 
+        }
       });
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
         setStream(mediaStream);
@@ -90,20 +90,20 @@ const FaceAttendance: React.FC = () => {
   // Capture image from camera
   const captureImage = (): string | null => {
     if (!canvasRef.current || !videoRef.current) return null;
-    
+
     const canvas = canvasRef.current;
     const video = videoRef.current;
     const context = canvas.getContext('2d');
-    
+
     if (!context) return null;
-    
+
     // Set canvas dimensions to match video
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    
+
     // Draw video frame to canvas
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
+
     // Get image data as base64 string
     return canvas.toDataURL('image/jpeg');
   };
@@ -119,18 +119,18 @@ const FaceAttendance: React.FC = () => {
         });
         return;
       }
-      
+
       setIsLoading(true);
-      
+
       // Start camera if not active
       if (!isCameraActive) {
         await startCamera();
         return;
       }
-      
+
       // Capture image
       const image = captureImage();
-      
+
       if (!image) {
         toast({
           title: 'Capture Error',
@@ -140,13 +140,13 @@ const FaceAttendance: React.FC = () => {
         setIsLoading(false);
         return;
       }
-      
+
       // Send image to API
-      const response = await apiClient.post('/api/attendance/face', { 
+      const response = await apiClient.post('/api/attendance/face', {
         sessionId: selectedSession,
-        image 
+        image
       });
-      
+
       if (response.data.success) {
         toast({
           title: 'Success',
@@ -204,26 +204,26 @@ const FaceAttendance: React.FC = () => {
           Mark your attendance using face recognition
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent>
         <div className="space-y-4">
           {attendanceMarked ? (
             <div className="text-center p-4 bg-green-50 rounded-lg">
-              <svg 
-                className="w-12 h-12 text-green-500 mx-auto mb-2" 
-                fill="none" 
-                stroke="currentColor" 
+              <svg
+                className="w-12 h-12 text-green-500 mx-auto mb-2"
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
               <p className="text-green-800 font-medium">Attendance Marked!</p>
-              
+
               {attendanceResult && (
                 <div className="mt-4 text-left bg-white p-3 rounded-md shadow-sm">
                   <p className="text-sm font-medium">Details:</p>
@@ -264,7 +264,7 @@ const FaceAttendance: React.FC = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-video">
                   {isCameraActive ? (
                     <video
@@ -281,7 +281,7 @@ const FaceAttendance: React.FC = () => {
                   )}
                   <canvas ref={canvasRef} className="hidden" />
                 </div>
-                
+
                 <div className="text-sm text-gray-500">
                   <p>Please ensure:</p>
                   <ul className="list-disc pl-5 mt-1 space-y-1">
@@ -295,19 +295,19 @@ const FaceAttendance: React.FC = () => {
           )}
         </div>
       </CardContent>
-      
+
       <CardFooter className="flex justify-between">
         {attendanceMarked ? (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={resetAttendance}
             className="w-full"
           >
             Mark Another Attendance
           </Button>
         ) : (
-          <Button 
-            onClick={markAttendance} 
+          <Button
+            onClick={markAttendance}
             disabled={isLoading || (!selectedSession && !isCameraActive)}
             className="w-full"
           >

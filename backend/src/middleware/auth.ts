@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
-import User from '../models/User';
 import config from '../config/index';
+import prisma from '../utils/dbPrisma';
+import { logger } from '../utils/logger';
 
 // Interface for decoded user data from JWT
 interface DecodedUser {
@@ -16,6 +17,12 @@ declare global {
       user?: any;
     }
   }
+}
+
+// Define AuthRequest type for controllers
+export interface AuthRequest extends Request {
+  user?: any;
+  app?: any;
 }
 
 // Protect routes
@@ -46,8 +53,10 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
     const jwtSecret = config.jwtSecret || 'default-secret-key';
     const decoded = jwt.verify(token, jwtSecret) as DecodedUser;
 
-    // Get user from the token
-    const user = await User.findById(decoded.id);
+    // Get user from the token using Prisma
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id }
+    });
 
     if (!user) {
       return res.status(401).json({
@@ -60,6 +69,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
     req.user = user;
     return next();
   } catch (err) {
+    logger.error('Auth middleware error:', err);
     return res.status(401).json({
       success: false,
       message: 'Not authorized to access this route',
@@ -107,7 +117,7 @@ export const checkAccess = (req: Request, res: Response, next: NextFunction): an
   }
 
   // Allow access if user is accessing their own resource
-  if (req.user.id.toString() === req.params.id || req.user.studentId === req.params.studentId) {
+  if (req.user.id === req.params.userId || req.user.studentId === req.params.studentId) {
     return next();
   }
 

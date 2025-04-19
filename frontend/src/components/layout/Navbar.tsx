@@ -33,6 +33,12 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Hide navbar on faculty pages
+  if (pathname.startsWith('/faculty')) {
+    return null;
+  }
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);

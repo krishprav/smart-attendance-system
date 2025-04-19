@@ -25,16 +25,16 @@ const FacePage: React.FC = () => {
               <TabsTrigger value="register">Face Registration</TabsTrigger>
               <TabsTrigger value="attendance">Mark Attendance</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="register" className="mt-6">
               <FaceRegistration />
             </TabsContent>
-            
+
             <TabsContent value="attendance" className="mt-6">
               <FaceAttendance />
             </TabsContent>
           </Tabs>
-          
+
           <div className="mt-12 bg-white rounded-xl shadow-md p-6">
             <h2 className="text-xl font-semibold text-indigo-800 mb-4">About Face Recognition</h2>
             <div className="space-y-4 text-gray-600">
@@ -42,7 +42,7 @@ const FacePage: React.FC = () => {
                 Our face recognition system uses advanced AI to securely verify your identity for attendance.
                 Your face data is encrypted and stored securely.
               </p>
-              
+
               <div>
                 <h3 className="font-medium text-indigo-700 mb-2">How it works:</h3>
                 <ol className="list-decimal pl-5 space-y-2">
@@ -52,7 +52,7 @@ const FacePage: React.FC = () => {
                   <li>The system will verify your identity and mark you present</li>
                 </ol>
               </div>
-              
+
               <div>
                 <h3 className="font-medium text-indigo-700 mb-2">Tips for best results:</h3>
                 <ul className="list-disc pl-5 space-y-1">

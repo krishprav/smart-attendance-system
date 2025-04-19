@@ -1,0 +1,163 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector(map: "vector")]
+}
+
+// User model
+model User {
+  id                String       @id @default(uuid())
+  name              String
+  email             String       @unique
+  password          String
+  role              Role
+  studentId         String?      @unique
+  isVerified        Boolean      @default(false)
+  verificationToken String?
+  resetPasswordToken String?
+  resetPasswordExpire DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  vector_encoding   Unsupported("vector(512)")?  // Store face encoding as pgvector
+  faceEncoding      Float[]      // Keep separate array for compatibility
+  faceRegistered    Boolean      @default(false)
+  faceRegisteredAt  DateTime?
+
+  // Relations
+  sessions          Session[]    @relation("FacultyToSession")
+  attendance        Attendance[] @relation("StudentToAttendance")
+  compliance        Compliance[] @relation("StudentToCompliance")
+  engagement        Engagement[] @relation("StudentToEngagement")
+  auditLogs         AuditLog[]   @relation("UserToAuditLog")
+}
+
+enum Role {
+  student
+  faculty
+  admin
+}
+
+// Session model
+model Session {
+  id              String       @id @default(uuid())
+  courseId        String
+  faculty         User         @relation("FacultyToSession", fields: [facultyId], references: [id])
+  facultyId       String
+  classType       ClassType    @default(lecture)
+  startTime       DateTime     @default(now())
+  endTime         DateTime?
+  duration        Int          // Duration in minutes
+  isActive        Boolean      @default(true)
+  location        String?
+  attendanceCount Int          @default(0)
+  totalStudents   Int          @default(0)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  attendance      Attendance[] @relation("SessionToAttendance")
+  compliance      Compliance[] @relation("SessionToCompliance")
+  engagement      Engagement[] @relation("SessionToEngagement")
+}
+
+enum ClassType {
+  lecture
+  lab
+  tutorial
+}
+
+// Attendance model
+model Attendance {
+  id                    String              @id @default(uuid())
+  session               Session             @relation("SessionToAttendance", fields: [sessionId], references: [id])
+  sessionId             String
+  student               User                @relation("StudentToAttendance", fields: [studentId], references: [id])
+  studentId             String
+  status                AttendanceStatus    @default(present)
+  markedBy              MarkedBy            @default(system)
+  markedAt              DateTime            @default(now())
+  faceVerified          Boolean             @default(false)
+  verificationMethod    VerificationMethod  @default(manual)
+  verificationImage     String?
+  verificationConfidence Float?
+  verificationDetails   Json?
+  location              Json?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@unique([sessionId, studentId])
+}
+
+enum AttendanceStatus {
+  present
+  absent
+  late
+}
+
+enum MarkedBy {
+  system
+  faculty
+  student
+}
+
+enum VerificationMethod {
+  face
+  manual
+  idcard
+  qrcode
+  rfid
+}
+
+// Compliance model
+model Compliance {
+  id                String    @id @default(uuid())
+  session           Session   @relation("SessionToCompliance", fields: [sessionId], references: [id])
+  sessionId         String
+  student           User      @relation("StudentToCompliance", fields: [studentId], references: [id])
+  studentId         String
+  idCardVisible     Boolean   @default(false)
+  phoneDetections   Json[]    // Array of phone detection events
+  overallCompliance Float     @default(1.0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([sessionId, studentId])
+}
+
+// Engagement model
+model Engagement {
+  id                String    @id @default(uuid())
+  session           Session   @relation("SessionToEngagement", fields: [sessionId], references: [id])
+  sessionId         String
+  student           User      @relation("StudentToEngagement", fields: [studentId], references: [id])
+  studentId         String
+  metrics           Json[]    // Array of engagement metrics
+  averageAttention  Float     @default(0.0)
+  averageEngagement Float     @default(0.0)
+  dominantEmotion   String    @default("neutral")
+  emotionCounts     Json      // Map of emotion counts
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([sessionId, studentId])
+}
+
+// AuditLog model
+model AuditLog {
+  id          String    @id @default(uuid())
+  user        User      @relation("UserToAuditLog", fields: [userId], references: [id])
+  userId      String
+  action      String
+  resource    String
+  resourceId  String?
+  details     String?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

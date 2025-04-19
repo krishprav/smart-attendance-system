@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
-import User from '../models/User';
+import prisma from '../utils/dbPrisma';
 import { sendEmail } from '../utils/email';
 import crypto from 'crypto';
+import { getGoogleAuthURL, getTokens, getGoogleUser, googleConfig } from '../config/googleAuth';
+import userModel from '../prisma-models/user';
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -12,8 +14,17 @@ export const register = async (req: Request, res: Response): Promise<any> => {
   try {
     const { name, email, password, role, studentId } = req.body;
 
+    // Check if email is from college domain
+    const emailDomain = email.split('@')[1];
+    if (!googleConfig.allowedDomains.includes(emailDomain)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Only college email addresses (iiitmanipur.ac.in) are allowed',
+      });
+    }
+
     // Check if user exists
-    let user = await User.findOne({ email });
+    let user = await prisma.user.findUnique({ where: { email } });
     if (user) {
       return res.status(400).json({
         success: false,
@@ -24,21 +35,22 @@ export const register = async (req: Request, res: Response): Promise<any> => {
     // Create verification token
     const verificationToken = crypto.randomBytes(20).toString('hex');
 
-    // Create user
-    user = new User({
-      name,
-      email,
-      password,
-      role,
-      studentId,
-      verificationToken,
-    });
-
     // Hash password
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    await user.save();
+    // Create user
+    user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role,
+        studentId,
+        verificationToken,
+        isVerified: false
+      }
+    });
 
     // Send verification email
     const verificationUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
@@ -60,8 +72,10 @@ export const register = async (req: Request, res: Response): Promise<any> => {
         message: 'User registered successfully. Please verify your email.',
       });
     } catch (err) {
-      user.verificationToken = undefined;
-      await user.save();
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { verificationToken: null }
+      });
 
       return res.status(500).json({
         success: false,
@@ -85,7 +99,7 @@ export const login = async (req: Request, res: Response): Promise<any> => {
     const { email, password } = req.body;
 
     // Check if user exists
-    const user = await User.findOne({ email }).select('+password');
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -112,8 +126,8 @@ export const login = async (req: Request, res: Response): Promise<any> => {
 
     // Create token
     const jwtSecret = process.env.JWT_SECRET || 'default-secret-key';
-    const payload = { id: user._id.toString() };
-    
+    const payload = { id: user.id };
+
     // Use a more basic approach to sign the token
     const token = jwt.sign(payload, jwtSecret);
 
@@ -121,11 +135,12 @@ export const login = async (req: Request, res: Response): Promise<any> => {
       success: true,
       token,
       user: {
-        id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
         studentId: user.studentId,
+        faceRegistered: user.faceRegistered || false
       },
     });
   } catch (err) {
@@ -137,12 +152,101 @@ export const login = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
+// @desc    Google OAuth URL
+// @route   GET /api/auth/google
+// @access  Public
+export const googleAuth = (req: Request, res: Response): any => {
+  res.redirect(getGoogleAuthURL());
+};
+
+// @desc    Google OAuth callback
+// @route   GET /api/auth/google/callback
+// @access  Public
+export const googleCallback = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const code = req.query.code as string;
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        message: 'Authorization code is required',
+      });
+    }
+
+    // Get tokens
+    const tokens = await getTokens(code);
+    if (!tokens || !tokens.id_token) {
+      return res.status(400).json({
+        success: false,
+        message: 'Failed to get tokens from Google',
+      });
+    }
+
+    // Get user info
+    const googleUser = await getGoogleUser(tokens.id_token);
+    if (!googleUser || !googleUser.email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Failed to get user info from Google',
+      });
+    }
+
+    // Check if email domain is from college
+    const emailDomain = googleUser.email.split('@')[1];
+    if (!googleConfig.allowedDomains.includes(emailDomain)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only college email addresses (iiitmanipur.ac.in) are allowed',
+      });
+    }
+
+    // Check if user exists
+    let user = await prisma.user.findUnique({ where: { email: googleUser.email } });
+
+    if (!user) {
+      // Generate random password and hash it
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(randomPassword, salt);
+
+      // Create new user
+      user = await prisma.user.create({
+        data: {
+          name: googleUser.name,
+          email: googleUser.email,
+          password: hashedPassword,
+          role: 'student', // Default role, can be updated later
+          isVerified: true // Google has already verified the email
+        }
+      });
+    } else if (!user.isVerified) {
+      // If user exists but not verified, mark as verified
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { isVerified: true }
+      });
+    }
+
+    // Create token
+    const jwtSecret = process.env.JWT_SECRET || 'default-secret-key';
+    const payload = { id: user.id };
+    const token = jwt.sign(payload, jwtSecret);
+
+    // Redirect to frontend with token
+    res.redirect(`${process.env.CLIENT_URL}/login/callback?token=${token}`);
+  } catch (err: any) {
+    console.error('Google OAuth callback error:', err);
+    res.redirect(`${process.env.CLIENT_URL}/login?error=${encodeURIComponent(err.message)}`);
+  }
+};
+
 // @desc    Verify email
 // @route   GET /api/auth/verify-email/:token
 // @access  Public
 export const verifyEmail = async (req: Request, res: Response): Promise<any> => {
   try {
-    const user = await User.findOne({ verificationToken: req.params.token });
+    const user = await prisma.user.findFirst({
+      where: { verificationToken: req.params.token }
+    });
 
     if (!user) {
       return res.status(400).json({
@@ -151,9 +255,13 @@ export const verifyEmail = async (req: Request, res: Response): Promise<any> => 
       });
     }
 
-    user.isVerified = true;
-    user.verificationToken = undefined;
-    await user.save();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isVerified: true,
+        verificationToken: null
+      }
+    });
 
     res.status(200).json({
       success: true,
@@ -173,7 +281,9 @@ export const verifyEmail = async (req: Request, res: Response): Promise<any> => 
 // @access  Public
 export const forgotPassword = async (req: Request, res: Response): Promise<any> => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const user = await prisma.user.findUnique({
+      where: { email: req.body.email }
+    });
 
     if (!user) {
       return res.status(404).json({
@@ -184,13 +294,19 @@ export const forgotPassword = async (req: Request, res: Response): Promise<any> 
 
     // Generate reset token
     const resetToken = crypto.randomBytes(20).toString('hex');
-    user.resetPasswordToken = crypto
+    const resetPasswordToken = crypto
       .createHash('sha256')
       .update(resetToken)
       .digest('hex');
-    user.resetPasswordExpire = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const resetPasswordExpire = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    await user.save();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetPasswordToken,
+        resetPasswordExpire
+      }
+    });
 
     // Create reset url
     const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
@@ -213,9 +329,13 @@ export const forgotPassword = async (req: Request, res: Response): Promise<any> 
         message: 'Password reset email sent',
       });
     } catch (err) {
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpire = undefined;
-      await user.save();
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          resetPasswordToken: null,
+          resetPasswordExpire: null
+        }
+      });
 
       return res.status(500).json({
         success: false,
@@ -242,9 +362,13 @@ export const resetPassword = async (req: Request, res: Response): Promise<any> =
       .update(req.params.token)
       .digest('hex');
 
-    const user = await User.findOne({
-      resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() },
+    const user = await prisma.user.findFirst({
+      where: {
+        resetPasswordToken,
+        resetPasswordExpire: {
+          gt: new Date()
+        }
+      }
     });
 
     if (!user) {
@@ -256,11 +380,16 @@ export const resetPassword = async (req: Request, res: Response): Promise<any> =
 
     // Set new password
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(req.body.password, salt);
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
+    const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
-    await user.save();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetPasswordToken: null,
+        resetPasswordExpire: null
+      }
+    });
 
     res.status(200).json({
       success: true,
@@ -273,7 +402,7 @@ export const resetPassword = async (req: Request, res: Response): Promise<any> =
       message: 'Server error',
     });
   }
-}; 
+};
 
 // Define extended Request type that includes user property
 interface AuthRequest extends Request {
@@ -285,7 +414,9 @@ interface AuthRequest extends Request {
 // @access  Private
 export const getMe = async (req: AuthRequest, res: Response): Promise<any> => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id }
+    });
 
     if (!user) {
       return res.status(404).json({
@@ -297,12 +428,13 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<any> => {
     res.status(200).json({
       success: true,
       data: {
-        id: user._id,
+        id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
         studentId: user.studentId,
         createdAt: user.createdAt,
+        faceRegistered: user.faceRegistered || false
       },
     });
   } catch (err) {

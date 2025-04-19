@@ -1,0 +1,3 @@
+@echo off
+echo Checking face registration data in database...
+npx ts-node src/scripts/check-face-data.ts

@@ -1,5 +1,15 @@
 import express from 'express';
-import { register, login, forgotPassword, resetPassword, verifyEmail, getMe, logout } from '../controllers/auth';
+import { 
+  register, 
+  login, 
+  forgotPassword, 
+  resetPassword, 
+  verifyEmail, 
+  getMe, 
+  logout,
+  googleAuth,
+  googleCallback
+} from '../controllers/auth';
 import { validateRegister, validateLogin } from '../middleware/validation';
 import { protect } from '../middleware/auth';
 
@@ -14,6 +24,16 @@ router.post('/register', validateRegister, register);
 // @desc    Login user and get token
 // @access  Public
 router.post('/login', validateLogin, login);
+
+// @route   GET /api/auth/google
+// @desc    Google OAuth login
+// @access  Public
+router.get('/google', googleAuth);
+
+// @route   GET /api/auth/google/callback
+// @desc    Google OAuth callback
+// @access  Public
+router.get('/google/callback', googleCallback);
 
 // @route   GET /api/auth/me
 // @desc    Get current user

@@ -6,7 +6,7 @@ dotenv.config();
 const config = {
   env: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '5000', 10),
-  mongoUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/attendance',
+  databaseUrl: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/attendance',
   jwtSecret: process.env.JWT_SECRET || 'default-secret-key',
   jwtExpire: process.env.JWT_EXPIRE || '30d',
   email: {

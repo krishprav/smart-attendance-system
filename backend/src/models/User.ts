@@ -15,6 +15,8 @@ export interface IUser extends mongoose.Document {
   resetPasswordExpire?: Date;
   createdAt: Date;
   faceEncoding?: number[];
+  faceRegistered?: boolean;
+  faceRegisteredAt?: Date;
   getSignedJwtToken(): string;
   matchPassword(enteredPassword: string): Promise<boolean>;
   getResetPasswordToken(): string;
@@ -25,6 +27,14 @@ const UserSchema = new mongoose.Schema<IUser>({
     type: [Number], // Store encoding as array of numbers
     default: undefined,
     select: false // Do not select by default for security
+  },
+  faceRegistered: {
+    type: Boolean,
+    default: false
+  },
+  faceRegisteredAt: {
+    type: Date,
+    default: null
   },
   name: {
     type: String,

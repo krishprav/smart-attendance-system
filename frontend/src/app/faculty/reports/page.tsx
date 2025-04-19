@@ -25,8 +25,7 @@ interface StudentAttendance {
   complianceScore: number;
 }
 
-import Layout from '@/components/layout/Layout';
-import { courses as realCourses } from '../../../data/courseData';
+import { courses } from '@/data/courseData';
 
 export default function FacultyReports() {
   const [selectedTab, setSelectedTab] = useState<'attendance' | 'compliance' | 'student'>('attendance');
@@ -39,18 +38,22 @@ export default function FacultyReports() {
   const [coursesList, setCoursesList] = useState<string[]>([]);
 
   useEffect(() => {
-    setCoursesList(realCourses.map((c) => c.code));
+    // Use real course data
+    setCoursesList(courses.map((c) => c.code));
 
+    // Generate attendance data
     setAttendanceData(
-      realCourses.map((course) => ({
+      courses.map((course) => ({
         courseId: course.code,
         attendanceRate: Math.floor(75 + Math.random() * 20),
         sessionCount: Math.floor(8 + Math.random() * 8),
         studentCount: Math.floor(20 + Math.random() * 20)
       }))
     );
+
+    // Generate compliance data
     setComplianceData(
-      realCourses.map((course) => ({
+      courses.map((course) => ({
         courseId: course.code,
         idCardCompliance: Math.floor(80 + Math.random() * 20),
         phoneCompliance: Math.floor(70 + Math.random() * 25),
@@ -70,8 +73,8 @@ export default function FacultyReports() {
   }, []);
 
   // Filter data based on selected course
-  const filteredAttendanceData = courseFilter === 'all' 
-    ? attendanceData 
+  const filteredAttendanceData = courseFilter === 'all'
+    ? attendanceData
     : attendanceData.filter(d => d.courseId === courseFilter);
 
   const filteredComplianceData = courseFilter === 'all'
@@ -97,14 +100,13 @@ export default function FacultyReports() {
   }
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gray-100 py-8">
+      <div className="py-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Attendance Reports</h1>
           <div className="mt-4 md:mt-0">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="bg-gray-50 border border-gray-300 text-gray-800 hover:bg-white px-6 py-3 rounded-xl shadow transition font-semibold"
             >
               Back to Home
@@ -194,7 +196,7 @@ export default function FacultyReports() {
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Average Attendance</h3>
                 <div className="flex items-center">
                   <span className="text-3xl font-bold text-indigo-600">
-                    {filteredAttendanceData.length > 0 
+                    {filteredAttendanceData.length > 0
                       ? Math.round(filteredAttendanceData.reduce((acc, curr) => acc + curr.attendanceRate, 0) / filteredAttendanceData.length)
                       : 0}%
                   </span>
@@ -213,7 +215,7 @@ export default function FacultyReports() {
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Total Students</h3>
                 <div className="flex items-center">
                   <span className="text-3xl font-bold text-indigo-600">
-                    {courseFilter === 'all' 
+                    {courseFilter === 'all'
                       ? attendanceData.reduce((max, curr) => curr.studentCount > max ? curr.studentCount : max, 0)
                       : filteredAttendanceData[0]?.studentCount || 0}
                   </span>
@@ -229,7 +231,7 @@ export default function FacultyReports() {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800">Attendance by Course</h3>
@@ -260,9 +262,9 @@ export default function FacultyReports() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="mr-2 w-24 bg-gray-200 rounded-full h-2.5">
-                              <div 
+                              <div
                                 className={`h-2.5 rounded-full ${
-                                  course.attendanceRate >= 90 ? 'bg-green-500' : 
+                                  course.attendanceRate >= 90 ? 'bg-green-500' :
                                   course.attendanceRate >= 75 ? 'bg-yellow-500' : 'bg-red-500'
                                 }`}
                                 style={{ width: `${course.attendanceRate}%` }}
@@ -291,7 +293,7 @@ export default function FacultyReports() {
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">ID Card Compliance</h3>
                 <div className="flex items-center">
                   <span className="text-3xl font-bold text-indigo-600">
-                    {filteredComplianceData.length > 0 
+                    {filteredComplianceData.length > 0
                       ? Math.round(filteredComplianceData.reduce((acc, curr) => acc + curr.idCardCompliance, 0) / filteredComplianceData.length)
                       : 0}%
                   </span>
@@ -302,7 +304,7 @@ export default function FacultyReports() {
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Phone Usage Compliance</h3>
                 <div className="flex items-center">
                   <span className="text-3xl font-bold text-indigo-600">
-                    {filteredComplianceData.length > 0 
+                    {filteredComplianceData.length > 0
                       ? Math.round(filteredComplianceData.reduce((acc, curr) => acc + curr.phoneCompliance, 0) / filteredComplianceData.length)
                       : 0}%
                   </span>
@@ -313,7 +315,7 @@ export default function FacultyReports() {
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Overall Compliance</h3>
                 <div className="flex items-center">
                   <span className="text-3xl font-bold text-indigo-600">
-                    {filteredComplianceData.length > 0 
+                    {filteredComplianceData.length > 0
                       ? Math.round(filteredComplianceData.reduce((acc, curr) => acc + curr.overallCompliance, 0) / filteredComplianceData.length)
                       : 0}%
                   </span>
@@ -321,7 +323,7 @@ export default function FacultyReports() {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800">Compliance by Course</h3>
@@ -345,9 +347,9 @@ export default function FacultyReports() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="mr-2 w-24 bg-gray-200 rounded-full h-2.5">
-                              <div 
+                              <div
                                 className={`h-2.5 rounded-full ${
-                                  course.idCardCompliance >= 90 ? 'bg-green-500' : 
+                                  course.idCardCompliance >= 90 ? 'bg-green-500' :
                                   course.idCardCompliance >= 75 ? 'bg-yellow-500' : 'bg-red-500'
                                 }`}
                                 style={{ width: `${course.idCardCompliance}%` }}
@@ -359,9 +361,9 @@ export default function FacultyReports() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="mr-2 w-24 bg-gray-200 rounded-full h-2.5">
-                              <div 
+                              <div
                                 className={`h-2.5 rounded-full ${
-                                  course.phoneCompliance >= 90 ? 'bg-green-500' : 
+                                  course.phoneCompliance >= 90 ? 'bg-green-500' :
                                   course.phoneCompliance >= 75 ? 'bg-yellow-500' : 'bg-red-500'
                                 }`}
                                 style={{ width: `${course.phoneCompliance}%` }}
@@ -373,9 +375,9 @@ export default function FacultyReports() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="mr-2 w-24 bg-gray-200 rounded-full h-2.5">
-                              <div 
+                              <div
                                 className={`h-2.5 rounded-full ${
-                                  course.overallCompliance >= 90 ? 'bg-green-500' : 
+                                  course.overallCompliance >= 90 ? 'bg-green-500' :
                                   course.overallCompliance >= 75 ? 'bg-yellow-500' : 'bg-red-500'
                                 }`}
                                 style={{ width: `${course.overallCompliance}%` }}
@@ -400,9 +402,9 @@ export default function FacultyReports() {
               <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-gray-800">Student Attendance & Compliance</h3>
                 <div className="relative">
-                  <input 
-                    type="text" 
-                    placeholder="Search by name or ID..." 
+                  <input
+                    type="text"
+                    placeholder="Search by name or ID..."
                     className="rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
@@ -431,9 +433,9 @@ export default function FacultyReports() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="mr-2 w-24 bg-gray-200 rounded-full h-2.5">
-                              <div 
+                              <div
                                 className={`h-2.5 rounded-full ${
-                                  student.attendanceRate >= 90 ? 'bg-green-500' : 
+                                  student.attendanceRate >= 90 ? 'bg-green-500' :
                                   student.attendanceRate >= 75 ? 'bg-yellow-500' : 'bg-red-500'
                                 }`}
                                 style={{ width: `${student.attendanceRate}%` }}
@@ -450,7 +452,7 @@ export default function FacultyReports() {
                             <div className="mr-2 w-24 bg-gray-200 rounded-full h-2.5">
                               <div
                                 className={`h-2.5 rounded-full ${
-                                  student.complianceScore >= 90 ? 'bg-green-500' : 
+                                  student.complianceScore >= 90 ? 'bg-green-500' :
                                   student.complianceScore >= 75 ? 'bg-yellow-500' : 'bg-red-500'
                                 }`}
                                 style={{ width: `${student.complianceScore}%` }}
@@ -481,6 +483,5 @@ export default function FacultyReports() {
         )}
       </div>
     </div>
-    </Layout>
   );
 }

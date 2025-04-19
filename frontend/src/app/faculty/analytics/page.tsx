@@ -1,11 +1,12 @@
 'use client';
 
-import Layout from '@/components/layout/Layout';
+
 import { useState, useEffect } from 'react';
 import AttendanceTrendChart from '@/components/charts/AttendanceTrendChart';
 import EngagementMetricsChart from '@/components/charts/EngagementMetricsChart';
 import VerificationMethodChart from '@/components/charts/VerificationMethodChart';
 import AnalyticsCard from '@/components/ui/AnalyticsCard';
+import { courses } from '@/data/courseData';
 
 export default function FacultyAnalyticsPage() {
   const [selectedClass, setSelectedClass] = useState<string>('all');
@@ -19,24 +20,41 @@ export default function FacultyAnalyticsPage() {
   const [error, setError] = useState<string | null>(null);
   // Error message will be displayed if needed
 
-  // Fetch all analytics data on mount
+  // Generate analytics data from course data
   useEffect(() => {
     setLoading(true);
-    Promise.all([
-      fetch('/api/analytics/overview').then(res => res.json()),
-      fetch('/api/analytics/trends').then(res => res.json()),
-      fetch('/api/faculty/classes').then(res => res.json()),
-    ])
-      .then(([overviewRes, trendsRes, classesRes]) => {
-        setOverview(overviewRes.data);
-        setTrends(trendsRes.data);
-        setClassList(classesRes);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('Failed to load analytics data.');
-        setLoading(false);
+    try {
+      // Generate overview data
+      setOverview({
+        totalStudents: 270, // Sum of all students
+        totalCourses: courses.length,
+        totalSessions: 87, // Example value
+        averageAttendance: 85, // Example percentage
+        complianceRate: 92 // Example percentage
       });
+
+      // Generate attendance trend data
+      setTrends([
+        { week: 'Week 1', rate: 78 },
+        { week: 'Week 2', rate: 82 },
+        { week: 'Week 3', rate: 85 },
+        { week: 'Week 4', rate: 81 },
+        { week: 'Week 5', rate: 87 },
+        { week: 'Week 6', rate: 90 },
+        { week: 'Week 7', rate: 88 },
+        { week: 'Week 8', rate: 92 },
+        { week: 'Week 9', rate: 89 },
+        { week: 'Week 10', rate: 91 }
+      ]);
+
+      // Set class list
+      setClassList(courses);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error generating analytics data:', err);
+      setError('Failed to load analytics data. Please try again later.');
+      setLoading(false);
+    }
   }, []);
 
   // Utility function for trend icons - will be used in future updates
@@ -63,8 +81,7 @@ export default function FacultyAnalyticsPage() {
   };
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white py-10 px-2 sm:px-8">
+      <div className="bg-gradient-to-br from-indigo-50 to-white py-10 px-2 sm:px-8">
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-md">
             <div className="flex items-center">
@@ -292,6 +309,5 @@ export default function FacultyAnalyticsPage() {
           </div>
         </div>
       </div>
-    </Layout>
   );
 }

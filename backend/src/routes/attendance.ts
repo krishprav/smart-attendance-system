@@ -1,15 +1,16 @@
 import express from 'express';
 import { body } from 'express-validator';
 import {
-  startSession,
+  createSession,
   endSession,
   getActiveSessions,
   getSessionDetails,
-  markAttendance,
   markAttendanceManually,
-  getSessionAttendance,
-  getStudentAttendanceHistory,
+  getStudentStats,
+  getAttendanceReport,
+  bulkMarkAttendance
 } from '../controllers/attendance';
+import { markGroupAttendance } from '../controllers/groupAttendance';
 import { markAttendanceWithFace } from '../controllers/faceAttendance';
 import { protect, authorize, checkAccess } from '../middleware/auth';
 
@@ -29,7 +30,7 @@ router.post(
     body('classType', 'Class type is required').isIn(['lecture', 'lab', 'tutorial']),
     body('duration', 'Duration must be a positive number').isNumeric().custom(value => value > 0),
   ],
-  startSession
+  createSession
 );
 
 // @route   PUT /api/attendance/sessions/:id/end
@@ -57,18 +58,6 @@ router.get(
   '/sessions/:id',
   authorize(['faculty', 'admin']),
   getSessionDetails
-);
-
-// @route   POST /api/attendance/sessions/:id/mark
-// @desc    Mark attendance with face recognition (legacy method)
-// @access  Private (Student only)
-router.post(
-  '/sessions/:id/mark',
-  authorize(['student']),
-  [
-    body('image', 'Image is required').not().isEmpty(),
-  ],
-  markAttendance
 );
 
 // @route   POST /api/attendance/face
@@ -103,7 +92,7 @@ router.post(
 router.get(
   '/sessions/:id/attendance',
   authorize(['faculty', 'admin']),
-  getSessionAttendance
+  getSessionDetails
 );
 
 // @route   GET /api/attendance/history/:studentId
@@ -112,7 +101,29 @@ router.get(
 router.get(
   '/history/:studentId',
   checkAccess,
-  getStudentAttendanceHistory
+  getStudentStats
+);
+
+// @route   POST /api/attendance/bulk
+// @desc    Bulk mark attendance for multiple students
+// @access  Private (Faculty only)
+router.post(
+  '/bulk',
+  authorize(['faculty']),
+  bulkMarkAttendance
+);
+
+// @route   POST /api/attendance/group
+// @desc    Mark attendance for multiple students using face recognition
+// @access  Private (Faculty only)
+router.post(
+  '/group',
+  authorize(['faculty']),
+  [
+    body('sessionId', 'Session ID is required').not().isEmpty(),
+    body('image', 'Image is required').not().isEmpty(),
+  ],
+  markGroupAttendance
 );
 
 export default router;

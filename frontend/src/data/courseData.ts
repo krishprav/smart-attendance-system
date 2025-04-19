@@ -9,8 +9,248 @@ export interface Course {
   program: string;
 }
 
-// Real course data for SEMESTER VI (CSE, CSE-AID, ECE, ECE-VLSI)
+// Real course data from IIIT Senapati, Manipur Jan-May 2025 Session (Pages 4-7 of the PDF)
 export const courses: Course[] = [
+  // SEMESTER II (All programs)
+  {
+    code: "MA1012",
+    title: "Engineering Mathematics II",
+    credits: 4,
+    instructors: ["Dr Kamalesh Kumar", "Dr. Pragnya Das", "Dr Sanjib Choudhury"],
+    sections: ["A", "B", "C", "D"],
+    semester: "II",
+    program: "All"
+  },
+  {
+    code: "CS1012",
+    title: "Data Structures",
+    credits: 3,
+    instructors: ["Dr. Kabita Thaoroijam", "Dr N Kishorjit Singh"],
+    sections: ["A", "B", "C", "D"],
+    semester: "II",
+    program: "All"
+  },
+  {
+    code: "CS1112",
+    title: "Data Structures Lab",
+    credits: 1,
+    instructors: ["Dr. Kabita Thaoroijam", "Dr. Kh. Motilal Singh", "Dr N Kishorjit Singh"],
+    sections: ["A", "B", "C", "D"],
+    semester: "II",
+    program: "All"
+  },
+  {
+    code: "EC1013",
+    title: "Basic Electronic Circuits",
+    credits: 3,
+    instructors: ["Dr. Nagesh Ch", "Dr. N. Monica Devi"],
+    sections: ["A", "B", "C", "D"],
+    semester: "II",
+    program: "All"
+  },
+  {
+    code: "EC1112",
+    title: "Basic Electronics Lab",
+    credits: 1,
+    instructors: ["Dr, Nagesh Ch", "Mrs. Kanchana Katta", "Mrs. Ranita Khumukcham", "Dr. N Monica Devi"],
+    sections: ["A", "B", "C", "D"],
+    semester: "II",
+    program: "All"
+  },
+  {
+    code: "PH1012",
+    title: "Engineering Physics II",
+    credits: 3,
+    instructors: ["Dr L Pradipkanti Devi"],
+    sections: ["A", "B", "C", "D"],
+    semester: "II",
+    program: "All"
+  },
+  {
+    code: "HS1091",
+    title: "Introduction to Entrepreneurship",
+    credits: 3,
+    instructors: ["Dr Akoijam Malemnganbi"],
+    sections: ["A", "B", "C", "D"],
+    semester: "II",
+    program: "All"
+  },
+  {
+    code: "EN1012",
+    title: "English Language Skills II",
+    credits: 3,
+    instructors: ["Dr L Sarbajit Singh", "Dr Akoijam Malemnganbi"],
+    sections: ["A", "B", "C", "D"],
+    semester: "II",
+    program: "All"
+  },
+  {
+    code: "KO1012",
+    title: "Korean Language Skills II",
+    credits: 3,
+    instructors: ["Dr Minjae Park"],
+    sections: ["Selected Students"],
+    semester: "II",
+    program: "All"
+  },
+
+  // SEMESTER IV (CSE & CSE-AID)
+  {
+    code: "CS2021",
+    title: "Discrete Mathematics",
+    credits: 3,
+    instructors: ["Dr. Pragnya Das"],
+    sections: ["A", "B"],
+    semester: "IV",
+    program: "CSE & CSE-AID"
+  },
+  {
+    code: "CS2022",
+    title: "Theory of Computing",
+    credits: 3,
+    instructors: ["Dr. Kh. Motilal Singh"],
+    sections: ["A", "B"],
+    semester: "IV",
+    program: "CSE & CSE-AID"
+  },
+  {
+    code: "CS2042",
+    title: "Software Engineering",
+    credits: 4,
+    instructors: ["Dr. S. Chanu Inunganbi"],
+    sections: ["A", "B"],
+    semester: "IV",
+    program: "CSE & CSE-AID"
+  },
+  {
+    code: "CS2043",
+    title: "Database Management Systems",
+    credits: 3,
+    instructors: ["Dr. Navanath Saharia"],
+    sections: ["A", "B"],
+    semester: "IV",
+    program: "CSE & CSE-AID"
+  },
+  {
+    code: "CS2141",
+    title: "Operating Systems Lab",
+    credits: 1,
+    instructors: ["Dr. R Bidyalakshmi Devi"],
+    sections: ["A", "B"],
+    semester: "IV",
+    program: "CSE & CSE-AID"
+  },
+  {
+    code: "CS2143",
+    title: "Database Management Systems Lab",
+    credits: 1,
+    instructors: ["Dr. Navanath Saharia"],
+    sections: ["A", "B"],
+    semester: "IV",
+    program: "CSE & CSE-AID"
+  },
+  {
+    code: "CS2041",
+    title: "Operating Systems",
+    credits: 3,
+    instructors: ["Dr. R Bidyalakshmi Devi"],
+    sections: ["A", "B"],
+    semester: "IV",
+    program: "CSE & CSE-AID"
+  },
+  {
+    code: "CS2051",
+    title: "Artificial Intelligence",
+    credits: 3,
+    instructors: ["Dr. S. Chanu Inunganbi"],
+    sections: ["A", "B"],
+    semester: "IV",
+    program: "CSE & CSE-AID"
+  },
+
+  // SEMESTER IV (ECE & ECE-VLSI)
+  {
+    code: "EC2014",
+    title: "Electromagnetic Theory",
+    credits: 3,
+    instructors: ["Dr. Subasit Borah"],
+    sections: ["C", "D"],
+    semester: "IV",
+    program: "ECE & ECE-VLSI"
+  },
+  {
+    code: "EC2042",
+    title: "Principles of Communication",
+    credits: 3,
+    instructors: ["Dr. Ramesh Ch. Mishra"],
+    sections: ["C", "D"],
+    semester: "IV",
+    program: "ECE & ECE-VLSI"
+  },
+  {
+    code: "EC2114",
+    title: "Principles of Communication Lab",
+    credits: 1,
+    instructors: ["Dr. Ramesh Ch. Mishra", "Mrs. Ranita Khumukcham"],
+    sections: ["C", "D"],
+    semester: "IV",
+    program: "ECE & ECE-VLSI"
+  },
+  {
+    code: "EC2032",
+    title: "Digital Signal Processing",
+    credits: 3,
+    instructors: ["Dr. Chittotosh Ganguly", "Dr. Subasit Borah"],
+    sections: ["C", "D"],
+    semester: "IV",
+    program: "ECE & ECE-VLSI"
+  },
+  {
+    code: "EC2132",
+    title: "Digital Signal Processing Lab",
+    credits: 1,
+    instructors: ["Dr. Chittotosh Ganguly", "Mrs. Kanchana Katta", "Dr. Subasit Borah"],
+    sections: ["C", "D"],
+    semester: "IV",
+    program: "ECE & ECE-VLSI"
+  },
+  {
+    code: "EC2082",
+    title: "Measurement and Instrumentation",
+    credits: 3,
+    instructors: ["Dr. Chittotosh Ganguly"],
+    sections: ["C", "D"],
+    semester: "IV",
+    program: "ECE & ECE-VLSI"
+  },
+  {
+    code: "CS2041",
+    title: "Operating Systems",
+    credits: 3,
+    instructors: ["Dr. R Bidyalakshmi Devi"],
+    sections: ["C", "D"],
+    semester: "IV",
+    program: "ECE & ECE-VLSI"
+  },
+  {
+    code: "CS2141",
+    title: "Operating Systems Lab",
+    credits: 1,
+    instructors: ["Dr. S. Chanu Inunganbi"],
+    sections: ["C", "D"],
+    semester: "IV",
+    program: "ECE & ECE-VLSI"
+  },
+  {
+    code: "EC2081",
+    title: "Control Systems",
+    credits: 4,
+    instructors: ["Dr. N. Monica Devi"],
+    sections: ["C", "D"],
+    semester: "IV",
+    program: "ECE & ECE-VLSI"
+  },
+
   // SEMESTER VI (CSE)
   {
     code: "CS3071",
@@ -35,7 +275,7 @@ export const courses: Course[] = [
     title: "Cyber Security",
     credits: 6,
     instructors: ["Dr. Kh. Motilal Singh"],
-    sections: ["A", "B"],
+    sections: ["A", "B"],  // Section A: 220101001-220101071, Section B: 220101071-22010100 && 220103001-220103040
     semester: "VI",
     program: "CSE"
   },
@@ -44,7 +284,7 @@ export const courses: Course[] = [
     title: "Natural Language Processing",
     credits: 6,
     instructors: ["Dr. Navanath Saharia"],
-    sections: ["A", "B"],
+    sections: ["A", "B"],  // Section A: 220101001-220101071, Section B: 220101071-22010100 && 220103001-220103040
     semester: "VI",
     program: "CSE"
   },
@@ -109,7 +349,7 @@ export const courses: Course[] = [
     title: "Computer Graphics",
     credits: 8,
     instructors: ["Mrs. Shrungashri Chaudhari"],
-    sections: ["A", "B"],
+    sections: ["B"],  // Section B: 220101071-22010100 && 220103001-220103040
     semester: "VI",
     program: "CSE-AID"
   },
@@ -168,10 +408,28 @@ export const courses: Course[] = [
     program: "CSE-AID"
   },
   {
+    code: "HS3093",
+    title: "Constitution Law and Public Administration in India",
+    credits: 6,
+    instructors: ["Float through SWAYAM", "Coordinator: Dr. Lairenjam Pradipkanti Devi"],
+    sections: ["A", "B"],
+    semester: "VI",
+    program: "CSE-AID"
+  },
+  {
     code: "HS3092",
     title: "Employability Skills",
     credits: 0,
     instructors: ["Float through SWAYAM", "Coordinator: Dr. Akoijam Malemnganbi"],
+    sections: ["A", "B"],
+    semester: "VI",
+    program: "CSE-AID"
+  },
+  {
+    code: "CS3202",
+    title: "Project - II",
+    credits: 4,
+    instructors: ["Coordinator: Dr. R Bidyalakshmi Devi"],
     sections: ["A", "B"],
     semester: "VI",
     program: "CSE-AID"
@@ -245,8 +503,8 @@ export const courses: Course[] = [
     code: "OE3053",
     title: "Introduction to Machine Learning",
     credits: 6,
-    instructors: ["Dr. Chittotosh Ganguly"],
-    sections: ["ECE Program"],
+    instructors: ["Float through SWAYAM", "Coordinator: Dr. N. Monica Devi"],
+    sections: ["C", "D"],
     semester: "VI",
     program: "ECE"
   },
@@ -364,8 +622,8 @@ export const courses: Course[] = [
     code: "OE3053",
     title: "Introduction to Machine Learning",
     credits: 6,
-    instructors: ["Dr. Chittotosh Ganguly"],
-    sections: ["ECE-VLSI Program"],
+    instructors: ["Float through SWAYAM", "Coordinator: Dr. N. Monica Devi"],
+    sections: ["C", "D"],
     semester: "VI",
     program: "ECE-VLSI"
   },
@@ -395,5 +653,72 @@ export const courses: Course[] = [
     sections: ["C", "D"],
     semester: "VI",
     program: "ECE-VLSI"
+  },
+
+  // SEMESTER VIII (CSE)
+  {
+    code: "CS403",
+    title: "Foundations of Cryptography",
+    credits: 6,
+    instructors: ["Float through SWAYAM", "Coordinator: Dr. S. Chanu Inunganbi"],
+    sections: ["CSE Program"],
+    semester: "VIII",
+    program: "CSE"
+  },
+  {
+    code: "CS404",
+    title: "Data Mining",
+    credits: 6,
+    instructors: ["Float through SWAYAM", "Coordinator: Dr. S. Chanu Inunganbi"],
+    sections: ["CSE Program"],
+    semester: "VIII",
+    program: "CSE"
+  },
+  {
+    code: "OE472",
+    title: "Internet of Things",
+    credits: 6,
+    instructors: ["Float through SWAYAM", "Coordinator: Dr. S. Chanu Inunganbi"],
+    sections: ["CSE Program"],
+    semester: "VIII",
+    program: "CSE"
+  },
+  {
+    code: "CS423",
+    title: "Project/Internship - IV",
+    credits: 18,
+    instructors: ["Coordinator: Dr. N Kishorjit Singh"],
+    sections: ["CSE Program"],
+    semester: "VIII",
+    program: "CSE"
+  },
+
+  // SEMESTER VIII (ECE)
+  {
+    code: "OE473",
+    title: "Biomedical Signal Processing",
+    credits: 6,
+    instructors: ["Float through SWAYAM", "Coordinator: Dr. Ramesh Ch. Mishra"],
+    sections: ["ECE Program"],
+    semester: "VIII",
+    program: "ECE"
+  },
+  {
+    code: "OE471",
+    title: "Introduction to Internet of Things",
+    credits: 6,
+    instructors: ["Float through SWAYAM", "Coordinator: Dr. Ramesh Ch. Mishra"],
+    sections: ["ECE Program"],
+    semester: "VIII",
+    program: "ECE"
+  },
+  {
+    code: "CS423",
+    title: "Project/Internship - IV",
+    credits: 18,
+    instructors: ["Dr. Chittotosh Ganguly"],
+    sections: ["ECE Program"],
+    semester: "VIII",
+    program: "ECE"
   }
 ];
